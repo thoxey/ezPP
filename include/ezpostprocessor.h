@@ -2,7 +2,6 @@
 #define EZPOSTPROCESSOR_H
 #include <vector>
 #include <GL/gl.h>
-#include <GL/glu.h>
 #include "ezeffect.h"
 
 class ezPostProcessor
