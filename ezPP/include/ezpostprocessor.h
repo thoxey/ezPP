@@ -1,6 +1,7 @@
 #ifndef EZPOSTPROCESSOR_H
 #define EZPOSTPROCESSOR_H
 #include <vector>
+#include <GL/glew.h>
 #include <GL/gl.h>
 #include "ezeffect.h"
 
@@ -31,6 +32,10 @@ public:
 
   //ez Functions
   //----------------------------------------------------------------------------------------------------------------------
+  /// @brief Initializes the ezPPer with data from the users GL context
+  //----------------------------------------------------------------------------------------------------------------------
+  void ezInit(int _screenWidth, int screenHeight);
+  //----------------------------------------------------------------------------------------------------------------------
   /// @brief adds an effect to the master vector to be compiled, will become template function to accept presets in future
   //----------------------------------------------------------------------------------------------------------------------
   void ezAddEffect(ezEffect _addedEffect);
@@ -54,10 +59,9 @@ public:
   /// @brief alternative dtor, clears buffers with killing PPer if needed
   //----------------------------------------------------------------------------------------------------------------------
   void ezCleanUp();
-
+  //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   const GLchar * ezVert =
-    "#version 330 core"
-    "//Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
+    "#version 330 core\n"
     "layout (location = 0) in vec2 position;"
     "layout (location = 1) in vec2 texCoords;"
     "out vec2 TexCoords;"
@@ -67,16 +71,16 @@ public:
         "TexCoords = texCoords;"
     "}";
 
+  //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   const GLchar * ezFrag =
-      "#version 330 core"
-      "//Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
-      "in vec2 TexCoords;"
-      "out vec4 color;"
-      "uniform sampler2D screenTexture;"
-      "void main()"
-      "{"
-          "color = texture(screenTexture, TexCoords);"
-      "}";
+    "#version 330 core\n"
+    "in vec2 TexCoords;"
+    "out vec4 color;"
+    "uniform sampler2D screenTexture;"
+    "void main()"
+    "{"
+        "color = texture(screenTexture, TexCoords);"
+    "}";
 
 
 private:
@@ -88,6 +92,23 @@ private:
   /// @brief stores the active buffers
   //----------------------------------------------------------------------------------------------------------------------
   std::vector<GLuint> m_activeBuffers;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The width and height of the screen
+  //----------------------------------------------------------------------------------------------------------------------
+  int m_screenWidth, m_screenHeight;
+
+  GLfloat quadVertices[24] =
+  {// Positions   // TexCoords
+    -1.0f,  1.0f,  0.0f, 1.0f,
+    -1.0f, -1.0f,  0.0f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+
+    -1.0f,  1.0f,  0.0f, 1.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+     1.0f,  1.0f,  1.0f, 1.0f};
+  //Split these and write individual briefs!
+  GLuint quadVAO, quadVBO, vertShader, fragShader, ezShaderProgram, textureColorbuffer, framebuffer;
+
 };
 
 #endif // EZPOSTPROCESSOR_H
