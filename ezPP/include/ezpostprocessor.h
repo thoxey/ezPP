@@ -1,6 +1,8 @@
 #ifndef EZPOSTPROCESSOR_H
 #define EZPOSTPROCESSOR_H
 #include <vector>
+#include <string>
+#include <iostream>
 #include <GL/glew.h>
 #include <GL/gl.h>
 #include "ezeffect.h"
@@ -60,27 +62,7 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   void ezCleanUp();
   //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
-  const GLchar * ezVert =
-    "#version 330 core\n"
-    "layout (location = 0) in vec2 position;"
-    "layout (location = 1) in vec2 texCoords;"
-    "out vec2 TexCoords;"
-    "void main()"
-    "{"
-        "gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);"
-        "TexCoords = texCoords;"
-    "}";
 
-  //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
-  const GLchar * ezFrag =
-    "#version 330 core\n"
-    "in vec2 TexCoords;"
-    "out vec4 color;"
-    "uniform sampler2D screenTexture;"
-    "void main()"
-    "{"
-        "color = texture(screenTexture, TexCoords);"
-    "}";
 
 
 private:
@@ -108,6 +90,8 @@ private:
      1.0f,  1.0f,  1.0f, 1.0f};
   //Split these and write individual briefs!
   GLuint quadVAO, quadVBO, vertShader, fragShader, ezShaderProgram, textureColorbuffer, framebuffer;
+
+  std::string m_compiledFragShader, m_compiledVertShader = "";
 
 };
 

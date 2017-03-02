@@ -50,9 +50,13 @@ OBJECTS_DIR   = ./
 
 SOURCES       = src/ezeffect.cpp \
 		src/ezgreyscale.cpp \
+		src/eznegative.cpp \
+		src/eznoeffects.cpp \
 		src/ezpostprocessor.cpp 
 OBJECTS       = ezeffect.o \
 		ezgreyscale.o \
+		eznegative.o \
+		eznoeffects.o \
 		ezpostprocessor.o
 DIST          = /opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		/opt/Qt5.7.0/5.7/gcc_64/mkspecs/common/unix.conf \
@@ -208,8 +212,12 @@ DIST          = /opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		/opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/lex.prf \
 		ezPP.pro include/ezeffect.h \
 		include/ezgreyscale.h \
+		include/eznegative.h \
+		include/eznoeffects.h \
 		include/ezpostprocessor.h src/ezeffect.cpp \
 		src/ezgreyscale.cpp \
+		src/eznegative.cpp \
+		src/eznoeffects.cpp \
 		src/ezpostprocessor.cpp
 QMAKE_TARGET  = ezPP
 DESTDIR       = lib/
@@ -573,8 +581,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/ezeffect.h include/ezgreyscale.h include/ezpostprocessor.h $(DISTDIR)/
-	$(COPY_FILE) --parents src/ezeffect.cpp src/ezgreyscale.cpp src/ezpostprocessor.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/ezeffect.h include/ezgreyscale.h include/eznegative.h include/eznoeffects.h include/ezpostprocessor.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/ezeffect.cpp src/ezgreyscale.cpp src/eznegative.cpp src/eznoeffects.cpp src/ezpostprocessor.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -618,8 +626,17 @@ compiler_clean:
 ezeffect.o: src/ezeffect.cpp include/ezeffect.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ezeffect.o src/ezeffect.cpp
 
-ezgreyscale.o: src/ezgreyscale.cpp 
+ezgreyscale.o: src/ezgreyscale.cpp include/ezgreyscale.h \
+		include/ezeffect.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ezgreyscale.o src/ezgreyscale.cpp
+
+eznegative.o: src/eznegative.cpp include/eznegative.h \
+		include/ezeffect.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o eznegative.o src/eznegative.cpp
+
+eznoeffects.o: src/eznoeffects.cpp include/eznoeffects.h \
+		include/ezeffect.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o eznoeffects.o src/eznoeffects.cpp
 
 ezpostprocessor.o: src/ezpostprocessor.cpp include/ezpostprocessor.h \
 		include/ezeffect.h

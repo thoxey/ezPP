@@ -1,6 +1,6 @@
-#include "ezgreyscale.h"
+#include "eznegative.h"
 
-ezGreyscale::ezGreyscale()
+ezNegative::ezNegative()
 {
   m_VertSource = "#version 330 core\n"
                  "layout (location = 0) in vec2 position;"
@@ -19,7 +19,6 @@ ezGreyscale::ezGreyscale()
                  "void main()"
                  "{"
                      "color = texture(screenTexture, TexCoords);"
-                     "float average = (color.b+color.g+color.b)/3.0;"
-                     "color = vec4(average, average, average, 1.0);"
+                     "color = vec4(1.0-color.b, 1.0-color.g, 1.0-color.b, 1.0);"
                  "}";
 }
