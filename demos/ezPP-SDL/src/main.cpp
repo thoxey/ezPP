@@ -6,7 +6,7 @@
 #include <GL/gl.h>
 
 #include <ezpostprocessor.h>
-#include <eznegative.h>
+#include <ezgreyscale.h>
 
 #define SCREENSIZE 800
 
@@ -107,7 +107,7 @@ int main()
   ezPostProcessor myezPPer;
   myezPPer.ezInit(SCREENSIZE, SCREENSIZE);
 
-  ezNegative effect1;
+  ezGreyscale effect1;
   myezPPer.ezAddEffect(effect1);
   myezPPer.ezCompileEffects();
 

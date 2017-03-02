@@ -79,7 +79,7 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   int m_screenWidth, m_screenHeight;
 
-  GLfloat quadVertices[24] =
+  const GLfloat quadVertices[24] =
   {// Positions   // TexCoords
     -1.0f,  1.0f,  0.0f, 1.0f,
     -1.0f, -1.0f,  0.0f, 0.0f,

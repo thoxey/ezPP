@@ -1,3 +1,0 @@
-Dearest future Tom,
-16/02
-The next step is to implement ezGreyScale!
