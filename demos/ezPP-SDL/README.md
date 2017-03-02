@@ -1,2 +1,2 @@
 # ezPP
-An OpenGL post processing library
+Showing ezPP in action using SDL to handle the context   
