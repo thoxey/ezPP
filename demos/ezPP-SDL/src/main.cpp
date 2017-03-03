@@ -7,6 +7,8 @@
 
 #include <ezpostprocessor.h>
 #include <ezgreyscale.h>
+#include <eznegative.h>
+#include <eznoeffects.h>
 
 #define SCREENSIZE 800
 
@@ -108,7 +110,9 @@ int main()
   myezPPer.ezInit(SCREENSIZE, SCREENSIZE);
 
   ezGreyscale effect1;
-  myezPPer.ezAddEffect(effect1);
+  ezNegative effect2;
+  ezNoEffects effect3;
+  myezPPer.ezAddEffect(effect3);
   myezPPer.ezCompileEffects();
 
   while(!quit)
@@ -139,7 +143,11 @@ int main()
             case SDLK_ESCAPE :  quit = true; break;
             break;
 
-            case SDLK_g : SDL_SetWindowFullscreen(window,SDL_FALSE); break;
+            case SDLK_g : myezPPer.ezAddEffect(effect1); myezPPer.ezCompileEffects(); break;
+            case SDLK_n : myezPPer.ezAddEffect(effect2); myezPPer.ezCompileEffects(); break;
+            case SDLK_c : myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect3); myezPPer.ezCompileEffects();break;
+            case SDLK_RETURN : myezPPer.returnEzFrag(); break;
+
             default : break;
           } // end of key process
         } // end of keydown

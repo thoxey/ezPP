@@ -2,23 +2,6 @@
 
 ezNegative::ezNegative()
 {
-  m_VertSource = "#version 330 core\n"
-                 "layout (location = 0) in vec2 position;"
-                 "layout (location = 1) in vec2 texCoords;"
-                 "out vec2 TexCoords;"
-                 "void main()"
-                 "{"
-                     "gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);"
-                     "TexCoords = texCoords;"
-                 "}";
-
-  m_FragSource = "#version 330 core\n"
-                 "in vec2 TexCoords;"
-                 "out vec4 color;"
-                 "uniform sampler2D screenTexture;"
-                 "void main()"
-                 "{"
-                     "color = texture(screenTexture, TexCoords);"
-                     "color = vec4(1.0-color.b, 1.0-color.g, 1.0-color.b, 1.0);"
-                 "}";
+  id = 2;
+  m_changePixelVals = "outColour = vec4(1.0-outColour.r,1.0-outColour.g,1.0-outColour.b, 1.0);\n";
 }

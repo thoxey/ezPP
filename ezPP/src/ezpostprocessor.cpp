@@ -15,7 +15,7 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 
   m_screenHeight = _screenHeight;
   m_screenWidth = _screenWidth;
-//-------------------------------------"Using code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
+  //-------------------------------------"Using code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
   //Create a color attachment texture
   textureColorbuffer;
   glGenTextures(1, &textureColorbuffer);
@@ -48,13 +48,21 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
   glBindVertexArray(0);
-//-------------------------------------end citation
+  //-------------------------------------end citation
 
 }
 
 void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
 {
-  m_effectMasterVector.push_back(_addedEffect);
+  bool addToMV = true;
+  for(auto i : m_effectMasterVector)
+    if(i.id == _addedEffect.id)
+      {
+        addToMV = false;
+        break;
+      }
+  if(addToMV)
+    m_effectMasterVector.push_back(_addedEffect);
 }
 void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
 {
@@ -69,22 +77,22 @@ void ezPostProcessor::ezCapture()
     }
 
   //Setting up shaders for Screen aligned quad
-    vertShader = glCreateShader(GL_VERTEX_SHADER);
-    const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
-    glShaderSource(vertShader, 1, &vertSource, NULL);
-    glCompileShader(vertShader);
+  vertShader = glCreateShader(GL_VERTEX_SHADER);
+  const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
+  glShaderSource(vertShader, 1, &vertSource, NULL);
+  glCompileShader(vertShader);
 
-    fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
-    glShaderSource(fragShader, 1, &fragSource, NULL);
-    glCompileShader(fragShader);
+  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
+  glShaderSource(fragShader, 1, &fragSource, NULL);
+  glCompileShader(fragShader);
 
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 
-    ezShaderProgram = glCreateProgram();
-    glAttachShader(ezShaderProgram, vertShader);
-    glAttachShader(ezShaderProgram, fragShader);
-    glLinkProgram(ezShaderProgram);
+  ezShaderProgram = glCreateProgram();
+  glAttachShader(ezShaderProgram, vertShader);
+  glAttachShader(ezShaderProgram, fragShader);
+  glLinkProgram(ezShaderProgram);
 
   //takes the framebuffer and converts to texture
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
@@ -96,9 +104,12 @@ void ezPostProcessor::ezCompileEffects()
 {
   //This takes the texture and carries out the operations on it defined in m_effectMasterVector
   //This will be the 'meat' of the library and will likely be the biggest function
-  m_compiledVertShader = m_effectMasterVector[0].getVertSource();
-  m_compiledFragShader = m_effectMasterVector[0].getFragSource();
-
+  m_compiledVertShader = m_VertSource;
+  std::string compilingFragShader = m_FragSource;
+  for(auto i : m_effectMasterVector)
+    compilingFragShader += i.getPixelValChange();
+  compilingFragShader += m_FragSourceEnd;
+  m_compiledFragShader = compilingFragShader;
 }
 void ezPostProcessor::ezRender()
 {
@@ -106,7 +117,7 @@ void ezPostProcessor::ezRender()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT);
   glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-//  glGenerateMipmap(GL_TEXTURE_2D);
+  //  glGenerateMipmap(GL_TEXTURE_2D);
   glBindVertexArray(quadVAO);
   glUseProgram(ezShaderProgram);
   glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -115,4 +126,15 @@ void ezPostProcessor::ezCleanUp()
 {
   //An alternative to the destructor in case you wanted to turn off the effects and clean the buffers
   //But keep the post processor around to use later
+
+  m_effectMasterVector.clear();
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glBindVertexArray(0);
 }
+#ifdef DEBUGEZPPER
+void ezPostProcessor::returnEzFrag()
+{
+  std::cerr<<m_compiledFragShader<<"\n";
+}
+#endif

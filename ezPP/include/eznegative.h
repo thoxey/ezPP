@@ -5,6 +5,5 @@ class ezNegative : public ezEffect
 {
 public:
   ezNegative();
-
 };
 #endif // EZNEGATIVE_H

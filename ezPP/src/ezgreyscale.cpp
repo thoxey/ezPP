@@ -2,24 +2,7 @@
 
 ezGreyscale::ezGreyscale()
 {
-  m_VertSource = "#version 330 core\n"
-                 "layout (location = 0) in vec2 position;"
-                 "layout (location = 1) in vec2 texCoords;"
-                 "out vec2 TexCoords;"
-                 "void main()"
-                 "{"
-                     "gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);"
-                     "TexCoords = texCoords;"
-                 "}";
-
-  m_FragSource = "#version 330 core\n"
-                 "in vec2 TexCoords;"
-                 "out vec4 color;"
-                 "uniform sampler2D screenTexture;"
-                 "void main()"
-                 "{"
-                     "color = texture(screenTexture, TexCoords);"
-                     "float average = (color.b+color.g+color.b)/3.0;"
-                     "color = vec4(average, average, average, 1.0);"
-                 "}";
+  id = 1;
+  m_changePixelVals = "float average = (outColour.r * 0.3+outColour.g * 0.6+outColour.b * 0.1)/3.0;\n"
+                      "outColour = vec4(average, average, average, 1.0);\n";
 }

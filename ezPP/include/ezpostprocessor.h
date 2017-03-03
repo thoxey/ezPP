@@ -1,5 +1,6 @@
 #ifndef EZPOSTPROCESSOR_H
 #define EZPOSTPROCESSOR_H
+#define DEBUGEZPPER
 #include <vector>
 #include <string>
 #include <iostream>
@@ -61,9 +62,10 @@ public:
   /// @brief alternative dtor, clears buffers with killing PPer if needed
   //----------------------------------------------------------------------------------------------------------------------
   void ezCleanUp();
-  //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
 
-
+#ifdef DEBUGEZPPER
+  void returnEzFrag();
+#endif
 
 private:
   //----------------------------------------------------------------------------------------------------------------------
@@ -92,6 +94,30 @@ private:
   GLuint quadVAO, quadVBO, vertShader, fragShader, ezShaderProgram, textureColorbuffer, framebuffer;
 
   std::string m_compiledFragShader, m_compiledVertShader = "";
+
+  //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
+  std::string m_VertSource =
+    "#version 330 core\n"
+    "layout (location = 0) in vec2 position;\n"
+    "layout (location = 1) in vec2 texCoords;\n"
+    "out vec2 TexCoords;\n"
+    "void main()\n"
+    "{\n"
+        "gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);\n"
+        "TexCoords = texCoords;\n"
+    "}\n";
+
+  std::string m_FragSource =
+    "#version 330 core\n"
+    "in vec2 TexCoords;\n"
+    "out vec4 color;\n"
+    "uniform sampler2D screenTexture;\n"
+    "void main()\n"
+    "{\n"
+        "vec4 outColour = texture(screenTexture, TexCoords);\n";
+  std::string m_FragSourceEnd =
+        "color = outColour;\n"
+    "}\n";
 
 };
 

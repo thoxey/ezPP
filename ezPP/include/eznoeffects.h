@@ -6,6 +6,8 @@ class ezNoEffects : public ezEffect
 {
 public:
   ezNoEffects();
+  int id = 0;
+
 };
 
 #endif // EZNOEFFECTS_H

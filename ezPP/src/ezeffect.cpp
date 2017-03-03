@@ -4,11 +4,7 @@ ezEffect::ezEffect()
 {
 
 }
-std::string ezEffect::getVertSource()
+std::string ezEffect::getPixelValChange()
 {
-  return m_VertSource;
-}
-std::string ezEffect::getFragSource()
-{
-  return m_FragSource;
+  return m_changePixelVals;
 }
