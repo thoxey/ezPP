@@ -48,12 +48,16 @@ OBJECTS_DIR   = ./
 
 ####### Files
 
-SOURCES       = src/ezeffect.cpp \
+SOURCES       = src/ez3x3kernel.cpp \
+		src/ezedgedetect.cpp \
+		src/ezeffect.cpp \
 		src/ezgreyscale.cpp \
 		src/eznegative.cpp \
 		src/eznoeffects.cpp \
 		src/ezpostprocessor.cpp 
-OBJECTS       = ezeffect.o \
+OBJECTS       = ez3x3kernel.o \
+		ezedgedetect.o \
+		ezeffect.o \
 		ezgreyscale.o \
 		eznegative.o \
 		eznoeffects.o \
@@ -210,11 +214,15 @@ DIST          = /opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/spec_pre.prf \
 		/opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/exceptions.prf \
 		/opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/yacc.prf \
 		/opt/Qt5.7.0/5.7/gcc_64/mkspecs/features/lex.prf \
-		ezPP.pro include/ezeffect.h \
+		ezPP.pro include/ez3x3kernel.h \
+		include/ezedgedetect.h \
+		include/ezeffect.h \
 		include/ezgreyscale.h \
 		include/eznegative.h \
 		include/eznoeffects.h \
-		include/ezpostprocessor.h src/ezeffect.cpp \
+		include/ezpostprocessor.h src/ez3x3kernel.cpp \
+		src/ezedgedetect.cpp \
+		src/ezeffect.cpp \
 		src/ezgreyscale.cpp \
 		src/eznegative.cpp \
 		src/eznoeffects.cpp \
@@ -581,8 +589,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/ezeffect.h include/ezgreyscale.h include/eznegative.h include/eznoeffects.h include/ezpostprocessor.h $(DISTDIR)/
-	$(COPY_FILE) --parents src/ezeffect.cpp src/ezgreyscale.cpp src/eznegative.cpp src/eznoeffects.cpp src/ezpostprocessor.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/ez3x3kernel.h include/ezedgedetect.h include/ezeffect.h include/ezgreyscale.h include/eznegative.h include/eznoeffects.h include/ezpostprocessor.h $(DISTDIR)/
+	$(COPY_FILE) --parents src/ez3x3kernel.cpp src/ezedgedetect.cpp src/ezeffect.cpp src/ezgreyscale.cpp src/eznegative.cpp src/eznoeffects.cpp src/ezpostprocessor.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -622,6 +630,14 @@ compiler_lex_clean:
 compiler_clean: 
 
 ####### Compile
+
+ez3x3kernel.o: src/ez3x3kernel.cpp include/ezedgedetect.h \
+		include/ezeffect.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ez3x3kernel.o src/ez3x3kernel.cpp
+
+ezedgedetect.o: src/ezedgedetect.cpp include/ezedgedetect.h \
+		include/ezeffect.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ezedgedetect.o src/ezedgedetect.cpp
 
 ezeffect.o: src/ezeffect.cpp include/ezeffect.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ezeffect.o src/ezeffect.cpp

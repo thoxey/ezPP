@@ -31,19 +31,19 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glGenFramebuffers(1, &framebuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   // Setup screen VAO
-
   glGenVertexArrays(1, &quadVAO);
   glGenBuffers(1, &quadVBO);
   glBindVertexArray(quadVAO);
   glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+
   //Pos attrib
   glEnableVertexAttribArray(0);
   glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)0);
+
   //Colour attrib
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (GLvoid*)(2 * sizeof(GLfloat)));
@@ -51,10 +51,10 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   //-------------------------------------end citation
 
 }
-
 void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
 {
   bool addToMV = true;
+
   for(auto i : m_effectMasterVector)
     if(i.id == _addedEffect.id)
       {
@@ -63,6 +63,22 @@ void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
       }
   if(addToMV)
     m_effectMasterVector.push_back(_addedEffect);
+  //Put all effects into two categories (More may be needed in future
+  std::vector<ezEffect> simple;
+  std::vector<ezEffect> complex;
+  for(auto i : m_effectMasterVector)
+    {
+      if(i.getIsComplex())
+        complex.push_back(i);
+      else
+        simple.push_back(i);
+    }
+  //Sort effects in the array
+  m_effectMasterVector.clear();
+  for(auto i : complex)
+    m_effectMasterVector.push_back(i);
+  for(auto i : simple)
+    m_effectMasterVector.push_back(i);
 }
 void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
 {
@@ -75,7 +91,6 @@ void ezPostProcessor::ezCapture()
       std::cerr<<"No effects present, please add an effect using ezAddEffect()\n";
       return;
     }
-
   //Setting up shaders for Screen aligned quad
   vertShader = glCreateShader(GL_VERTEX_SHADER);
   const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();

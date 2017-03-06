@@ -95,7 +95,7 @@ private:
 
   std::string m_compiledFragShader, m_compiledVertShader = "";
 
-  //Taken from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
+  //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   std::string m_VertSource =
     "#version 330 core\n"
     "layout (location = 0) in vec2 position;\n"
@@ -112,13 +112,18 @@ private:
     "in vec2 TexCoords;\n"
     "out vec4 color;\n"
     "uniform sampler2D screenTexture;\n"
+    "float offset;\n"
+    "float kernel[9];\n"
+    "vec2 offsets[9];\n"
+    "vec3 sampleTex[9];\n"
+    "vec3 col;\n"
     "void main()\n"
     "{\n"
         "vec4 outColour = texture(screenTexture, TexCoords);\n";
   std::string m_FragSourceEnd =
         "color = outColour;\n"
     "}\n";
-
+  //End Citation
 };
 
 #endif // EZPOSTPROCESSOR_H

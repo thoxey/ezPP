@@ -2,4 +2,5 @@
 
 ezNoEffects::ezNoEffects()
 {
+  m_isComplex = false;
 }
