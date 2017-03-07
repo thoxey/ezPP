@@ -14,9 +14,6 @@ isEqual(QT_MAJOR_VERSION, 5) {
 	cache()
 	DEFINES +=QT5BUILD
 }
-# this demo uses SDL so add the paths using the sdl2-config tool
-QMAKE_CXXFLAGS+=$$system(sdl2-config  --cflags)
-message(output from sdl2-config --cflags added to CXXFLAGS= $$QMAKE_CXXFLAGS)
 
 QMAKE_CXXFLAGS += -DGLEW_STATIC
 
@@ -24,8 +21,6 @@ linux: {
   LIBS += $$system(sdl2-config --libs)
   LIBS += -L/usr/local/lib/ -lSDL2 -lSDL2_image -lGLEW
 }
-
-
 macx: {
   QMAKE_MAC_SDK = macosx10.12
   DEFINES+=MAC_OS_X_VERSION_MIN_REQUIRED=1060
@@ -36,10 +31,6 @@ macx: {
   INCLUDEPATH += /Library/Frameworks/SDL2.framework/Headers
   INCLUDEPATH += /usr/local/include
 }
-
-
-# where to put moc auto generated files
-MOC_DIR=moc
 # on a mac we don't create a .app bundle file ( for ease of multiplatform use)
 CONFIG-=app_bundle
 # Auto include all .cpp files in the project src directory (can specifiy individually if required)
@@ -48,18 +39,10 @@ SOURCES+= $$PWD/src/*.cpp
 HEADERS+= $$PWD/include/*.h
 # and add the include dir into the search path for Qt and make
 INCLUDEPATH += $$PWD/include
-
 #Including the ezPP library, this is a lazy link since its a packaged demo  --TH
 INCLUDEPATH += ../../ezPP/include
 DEPENDPATH += ../../ezPP/include
 LIBS += -L ../../ezPP/lib -lezPP
 QMAKE_RPATHDIR += $$PWD/../../ezPP/lib
-
-# where our exe is going to live (root of project)
-DESTDIR=./
-# add the glsl shader files
-OTHER_FILES+= shaders/*.glsl \
-              ezShaders/*.glsl \
-              exitnote.txt \
 # were are going to default to a console app
 CONFIG += console

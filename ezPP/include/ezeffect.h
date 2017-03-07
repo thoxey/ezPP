@@ -1,7 +1,11 @@
 #ifndef EZEFFECT_H
 #define EZEFFECT_H
-#include <glm/gtc/type_ptr.hpp>
+///#include <glm/gtc/type_ptr.hpp>
+#ifndef __APPLE__
 #include <GL/gl.h>
+#else
+#include <gl3.h>
+#endif
 #include <string>
 
 class ezEffect
@@ -37,7 +41,7 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief the RGB change to be applied to each pixel, likely to change form
   //----------------------------------------------------------------------------------------------------------------------
-  glm::vec3 m_RGBchange;
+  //glm::vec3 m_RGBchange;
 
 };
 

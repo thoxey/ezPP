@@ -1,9 +1,12 @@
-#include <GL/glew.h>
-
 #include <SDL.h>
 #include <cstdlib>
 #include <iostream>
+#ifndef __APPLE__
+#include <GL/glew.h>
 #include <GL/gl.h>
+#else
+#include <gl3.h>
+#endif
 
 #include <ezpostprocessor.h>
 #include <ezgreyscale.h>
@@ -63,9 +66,10 @@ int main()
   SDL_Event event;
 
   //Init Glew
+#ifndef __APPLE__
   glewExperimental = GL_TRUE;
   glewInit();
-
+#endif
   ///TEST TRIANGLE/////////////////////////////////////////////////////////////////////////////////////////////////
   ///Taken from "https://learnopengl.com/code_viewer.php?code=getting-started/hello-triangle-exercise1" Accesesed 21/02
   //---------------------------------------------------------------------------------------------------------------------------------------------------DECLARE VERTEX ARRAY
