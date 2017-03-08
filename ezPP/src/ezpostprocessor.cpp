@@ -10,6 +10,15 @@ ezPostProcessor::~ezPostProcessor()
 }
 void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 {
+  const GLfloat quadVertices[24] =
+  {// Positions   // TexCoords
+    -1.0f,  1.0f,  0.0f, 1.0f,
+    -1.0f, -1.0f,  0.0f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+
+    -1.0f,  1.0f,  0.0f, 1.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
+     1.0f,  1.0f,  1.0f, 1.0f};
 #ifndef __APPLE__
     glewExperimental = GL_TRUE;
     glewInit();
@@ -18,7 +27,6 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     m_screenWidth = _screenWidth;
     //-------------------------------------"Using code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
     //Create a color attachment texture
-    textureColorbuffer;
     glGenTextures(1, &textureColorbuffer);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
@@ -148,9 +156,11 @@ void ezPostProcessor::ezCleanUp()
     glClear(GL_COLOR_BUFFER_BIT);
     glBindVertexArray(0);
 }
-#ifdef DEBUGEZPPER
-void ezPostProcessor::returnEzFrag()
+std::string ezPostProcessor::returnEzFrag()
 {
-    std::cerr<<m_compiledFragShader<<"\n";
+    return m_compiledFragShader;
 }
-#endif
+std::vector<ezEffect> ezPostProcessor::getEffectsVector()
+{
+  return m_effectMasterVector;
+}

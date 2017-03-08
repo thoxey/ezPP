@@ -2,7 +2,6 @@
 #define EZPOSTPROCESSOR_H
 #define DEBUGEZPPER
 #include <vector>
-#include <string>
 #include <iostream>
 #ifndef __APPLE__
 #include <GL/glew.h>
@@ -15,7 +14,7 @@
 class ezPostProcessor
 {
 //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-//Making into a Singleton, kept seperate for ease of reading
+//Making into a Singleton class, kept seperate for ease of reading
 private : static ezPostProcessor *instance;
 public : static ezPostProcessor *getInstance()
   {
@@ -38,6 +37,10 @@ public:
   ~ezPostProcessor();
 
   //ez Functions
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief Returns the effects vector
+  //----------------------------------------------------------------------------------------------------------------------
+  std::vector<ezEffect> getEffectsVector();
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief Initializes the ezPPer with data from the users GL context
   //----------------------------------------------------------------------------------------------------------------------
@@ -67,9 +70,7 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   void ezCleanUp();
 
-#ifdef DEBUGEZPPER
-  void returnEzFrag();
-#endif
+  std::string returnEzFrag();
 
 private:
   //----------------------------------------------------------------------------------------------------------------------
@@ -85,48 +86,67 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   int m_screenWidth, m_screenHeight;
 
-  const GLfloat quadVertices[24] =
-  {// Positions   // TexCoords
-    -1.0f,  1.0f,  0.0f, 1.0f,
-    -1.0f, -1.0f,  0.0f, 0.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-
-    -1.0f,  1.0f,  0.0f, 1.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-     1.0f,  1.0f,  1.0f, 1.0f};
   //Split these and write individual briefs!
-  GLuint quadVAO, quadVBO, vertShader, fragShader, ezShaderProgram, textureColorbuffer, framebuffer;
-
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The VAO and the VBO for the screen space quad
+  //----------------------------------------------------------------------------------------------------------------------
+  GLuint quadVAO, quadVBO;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief These are used to initialise the shaders
+  //----------------------------------------------------------------------------------------------------------------------
+  GLuint vertShader, fragShader, ezShaderProgram;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The buffers for holding the different textures
+  //----------------------------------------------------------------------------------------------------------------------
+  GLuint textureColorbuffer;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The frame buffer object that we will manipulate
+  //----------------------------------------------------------------------------------------------------------------------
+  GLuint framebuffer;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The compiled shaders that get applied to the screenspace quad
+  //----------------------------------------------------------------------------------------------------------------------
   std::string m_compiledFragShader, m_compiledVertShader = "";
 
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The source for the vertex shader it just passes on the texture coordinates
+  //----------------------------------------------------------------------------------------------------------------------
   std::string m_VertSource =
-    "#version 330 core\n"
-    "layout (location = 0) in vec2 position;\n"
-    "layout (location = 1) in vec2 texCoords;\n"
-    "out vec2 TexCoords;\n"
-    "void main()\n"
-    "{\n"
-        "gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);\n"
-        "TexCoords = texCoords;\n"
-    "}\n";
-
+    R"m_VertSource(
+    #version 330 core
+    layout (location = 0) in vec2 position;
+    layout (location = 1) in vec2 texCoords;
+    out vec2 TexCoords;
+    void main()
+    {
+        gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
+        TexCoords = texCoords;
+    }
+    )m_VertSource";
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The start of the fragment shader, it declares common variables and assigns the screen texture to a Vec4
+  //----------------------------------------------------------------------------------------------------------------------
   std::string m_FragSource =
-    "#version 330 core\n"
-    "in vec2 TexCoords;\n"
-    "out vec4 color;\n"
-    "uniform sampler2D screenTexture;\n"
-    "float offset;\n"
-    "float kernel[9];\n"
-    "vec2 offsets[9];\n"
-    "vec3 sampleTex[9];\n"
-    "vec3 col;\n"
-    "void main()\n"
-    "{\n"
-        "vec4 outColour = texture(screenTexture, TexCoords);\n";
+    R"m_FragSource(
+    #version 330 core
+    in vec2 TexCoords;
+    out vec4 color;
+    uniform sampler2D screenTexture;
+    float offset;
+    float kernel[9];
+    vec2 offsets[9];
+    vec3 sampleTex[9];
+    vec3 col;
+    void main()
+    {
+        vec4 outColour = texture(screenTexture, TexCoords);
+    )m_FragSource";
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief This is the end of the frag shader, it just pushes the texture as the colour and ends the shader
+  //----------------------------------------------------------------------------------------------------------------------
   std::string m_FragSourceEnd =
-        "color = outColour;\n"
-    "}\n";
+        "color = outColour;\n}";
   //End Citation
 };
 

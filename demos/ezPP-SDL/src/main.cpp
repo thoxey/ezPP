@@ -200,7 +200,7 @@ int main()
                   case SDLK_s : myezPPer.ezAddEffect(effect5); myezPPer.ezCompileEffects(); break;
                   case SDLK_m : myezPPer.ezAddEffect(effect6); myezPPer.ezCompileEffects(); break;
                   case SDLK_c : myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
-                  case SDLK_RETURN : myezPPer.returnEzFrag(); break;
+                  case SDLK_RETURN : std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
                   default : break;
                   } // end of key process
               } // end of keydown

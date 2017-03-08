@@ -17,6 +17,10 @@ isEqual(QT_MAJOR_VERSION, 5) {
 
 QMAKE_CXXFLAGS += -DGLEW_STATIC
 
+# this demo uses SDL so add the paths using the sdl2-config tool
+QMAKE_CXXFLAGS+=$$system(sdl2-config  --cflags)
+message(output from sdl2-config --cflags added to CXXFLAGS= $$QMAKE_CXXFLAGS)
+
 linux: {
   LIBS += $$system(sdl2-config --libs)
   LIBS += -L/usr/local/lib/ -lSDL2 -lSDL2_image -lGLEW
