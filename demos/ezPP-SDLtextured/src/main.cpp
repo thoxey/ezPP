@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <cstdlib>
 #include <iostream>
+#include <SOIL.h>
 #ifndef __APPLE__
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -17,7 +18,6 @@
 #include <ezgaussianblur.h>
 #include <ezemboss.h>
 #include <ezsharpness.h>
-#include <ezbrightness.h>
 
 #define SCREENSIZE 800
 
@@ -25,22 +25,37 @@
 /// @author Jon Macey & Tom Hoxey
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
-const GLchar* vertexShaderSource = "#version 330 core\n"
-                                   "layout (location = 0) in vec3 position;\n"
-                                   "layout (location = 1) in vec3 color;\n"
-                                   "out vec3 ourColor;\n"
-                                   "void main()\n"
-                                   "{\n"
-                                   "gl_Position = vec4(position, 1.0);\n"
-                                   "ourColor = color;\n"
-                                   "}\0";
-const GLchar* fragmentShaderSource = "#version 330 core\n"
-                                     "in vec3 ourColor;\n"
-                                     "out vec4 color;\n"
-                                     "void main()\n"
-                                     "{\n"
-                                     "color = vec4(ourColor, 1.0f);\n"
-                                     "}\n\0";
+std::string vertexShaderSource =
+    R"vertexShader(
+    #version 330 core
+    layout (location = 0) in vec3 position;
+    layout (location = 1) in vec3 color;
+    layout (location = 2) in vec2 texCoord;
+
+    out vec3 ourColor;
+    out vec2 TexCoord;
+
+    void main()
+    {
+    gl_Position = vec4(position, 1.0f);
+    ourColor = color;
+    TexCoord = texCoord;
+    })vertexShader";
+std::string fragmentShaderSource =
+    R"fragmentShader(
+    #version 330 core
+    in vec3 ourColor;
+    in vec2 TexCoord;
+
+    out vec4 color;
+
+    uniform sampler2D ourTexture;
+
+    void main()
+    {
+        color = texture(ourTexture, TexCoord);
+    }
+    )fragmentShader";
 
 
 
@@ -74,73 +89,71 @@ int main()
   glewExperimental = GL_TRUE;
   glewInit();
 #endif
-  ///TEST TRIANGLE/////////////////////////////////////////////////////////////////////////////////////////////////
-  ///Taken from "https://learnopengl.com/code_viewer.php?code=getting-started/hello-triangle-exercise1" Accesesed 21/02
-  //---------------------------------------------------------------------------------------------------------------------------------------------------DECLARE VERTEX ARRAY
-  // Vertex shader
-  GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-  glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-  glCompileShader(vertexShader);
-  // Check for compile time errors
-  GLint success;
-  GLchar infoLog[512];
-  glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-  if (!success)
-    {
-      glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-  // Fragment shader
-  GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-  glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-  glCompileShader(fragmentShader);
-  // Check for compile time errors
-  glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-  if (!success)
-    {
-      glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-    }
-  // Link shaders
-  GLuint shaderProgram = glCreateProgram();
-  glAttachShader(shaderProgram, vertexShader);
-  glAttachShader(shaderProgram, fragmentShader);
-  glLinkProgram(shaderProgram);
-  // Check for linking errors
-  glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-  if (!success) {
-      glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-    }
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
-  //---------------------------------------------------------------------------------------------------------------------------------------------------DECLARE VERTICIES FOR TRIANGLE
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  ///TAKEN FROM - https://learnopengl.com/code_viewer.php?code=getting-started/textures_combined - Accessed on 0903///
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+  // Set up vertex data (and buffer(s)) and attribute pointers
   GLfloat vertices[] = {
-    // Positions         // Colors
-    0.8f, -0.8f, 1.0f,  1.0f, 0.2f, 0.2f,  // Bottom Right
-    -0.8f, -0.8f, 0.0f,  0.2f, 1.0f, 0.2f,  // Bottom Left
-    0.0f,  0.8f, -1.0f,  0.2f, 0.2f, 1.0f   // Top
+    // Positions          // Colors           // Texture Coords
+    0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f, // Top Right
+    0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f, // Bottom Right
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f, // Bottom Left
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f  // Top Left
   };
-  GLuint VBO, VAO;
+  GLuint indices[] = {  // Note that we start from 0!
+                        0, 1, 3, // First Triangle
+                        1, 2, 3  // Second Triangle
+                     };
+  GLuint VBO, VAO, EBO;
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
-  // Bind the Vertex Array Object first, then bind and set vertex buffer(s) and attribute pointer(s).
+  glGenBuffers(1, &EBO);
+
   glBindVertexArray(VAO);
 
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
   // Position attribute
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)0);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)0);
   glEnableVertexAttribArray(0);
   // Color attribute
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
   glEnableVertexAttribArray(1);
+  // TexCoord attribute
+  glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (GLvoid*)(6 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(2);
 
   glBindVertexArray(0); // Unbind VAO
-  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
+  // Load and create a texture
+  GLuint texture1;
+  // ====================
+  // Texture 1
+  // ====================
+  glGenTextures(1, &texture1);
+  glBindTexture(GL_TEXTURE_2D, texture1); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
+  // Set our texture parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);	// Set texture wrapping to GL_REPEAT
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+  // Set texture filtering
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  // Load, create texture and generate mipmaps
+  int width, height;
+  unsigned char* image = SOIL_load_image("bliss.png", &width, &height, 0, SOIL_LOAD_RGB);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, image);
+  glGenerateMipmap(GL_TEXTURE_2D);
+  SOIL_free_image_data(image);
+  glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
+
+  //BIND THE SHADER
+
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
   //Init ezPP
   ezPostProcessor myezPPer;
@@ -172,8 +185,6 @@ int main()
   ez3x3Kernel     effect7(sharpness, 0);
   ez3x3Kernel     effect8(emboss, 1);
   ez3x3Kernel     effect9(average, 2);
-  ezBrightness    effect10(true, 0.1f);
-  ezBrightness    effect11(false, 0.1f);
 
   myezPPer.ezAddEffect(effect0);
   myezPPer.ezCompileEffects();
@@ -213,8 +224,6 @@ int main()
                   case SDLK_1 : myezPPer.ezAddEffect(effect7); myezPPer.ezCompileEffects(); break;
                   case SDLK_2 : myezPPer.ezAddEffect(effect8); myezPPer.ezCompileEffects(); break;
                   case SDLK_3 : myezPPer.ezAddEffect(effect9); myezPPer.ezCompileEffects(); break;
-                  case SDLK_UP : myezPPer.ezAddEffect(effect10); myezPPer.ezCompileEffects(); break;
-                  case SDLK_DOWN : myezPPer.ezAddEffect(effect11); myezPPer.ezCompileEffects(); break;
                   case SDLK_c : myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
                   case SDLK_RETURN : std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
                   default : break;
@@ -229,7 +238,6 @@ int main()
       myezPPer.ezCapture();
       //draw testing triangle
       glBindVertexArray(VAO);
-      glUseProgram(shaderProgram);
       glDrawArrays(GL_TRIANGLES, 0, 3);
       glBindVertexArray(0);
       //Now we draw to the scren using our texture

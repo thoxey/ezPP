@@ -25,22 +25,29 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 #endif
     m_screenHeight = _screenHeight;
     m_screenWidth = _screenWidth;
-    //-------------------------------------"Using code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
+    //-------------------------------------"Adapted code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
     //Create a color attachment texture
     glGenTextures(1, &textureColorbuffer);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _screenWidth, _screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    //DepthBuffer
+    //glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT24, m_screenWidth, m_screenWidth, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     //Create a framebuffer
-    framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    //Create a Depthbuffer (Renderbuffer
+    glGenRenderbuffers(1, &depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_screenWidth, m_screenHeight);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
 
     // Setup screen VAO
     glGenVertexArrays(1, &quadVAO);
@@ -65,7 +72,7 @@ void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
     bool addToMV = true;
 
     for(auto i : m_effectMasterVector)
-        if(i.id == _addedEffect.id)
+        if(i.id == _addedEffect.id && !i.getIsMultiple())
         {
             addToMV = false;
             break;
@@ -118,7 +125,7 @@ void ezPostProcessor::ezCapture()
     glAttachShader(ezShaderProgram, fragShader);
     glLinkProgram(ezShaderProgram);
 
-    //takes the framebuffer and converts to texture
+    //Redirects to my framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
@@ -131,10 +138,37 @@ void ezPostProcessor::ezCompileEffects()
     m_compiledVertShader = m_VertSource;
     std::string compilingFragShader = m_FragSource;
     for(auto i : m_effectMasterVector)
+      {
+        if(i.getIsComplex())
+          {
+           ezSubRender();
+          }
         compilingFragShader += i.getPixelValChange();
+      }
     compilingFragShader += m_FragSourceEnd;
     m_compiledFragShader = compilingFragShader;
 }
+void ezPostProcessor::ezSubRender()
+{
+  std::cerr<<"TESTING Sub Rendering \n";
+  //'Cache' the effect to a framebuffer and repeat
+
+  //WIP
+
+  GLuint newFramebuffer;
+  //takes the framebuffer and converts to texture
+  glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT);
+  glViewport(0,0,m_screenWidth,m_screenHeight);
+
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+  glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureColorbuffer, 0);
+
+  glBindTexture(GL_TEXTURE_2D, 0);
+}
+
 void ezPostProcessor::ezRender()
 {
     //pushes to screen our newer sexier post processed image
