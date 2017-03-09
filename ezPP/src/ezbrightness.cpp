@@ -25,12 +25,12 @@ ezBrightness::ezBrightness(bool _up, float _increment)
     {
       m_changePixelVals = "brightnessIncrement += ";
       m_changePixelVals.append(incrStr);
-      m_changePixelVals.append(";\n outColour =vec4(outColour.r+brightnessIncrement,outColour.g+brightnessIncrement,outColour.b+brightnessIncrement,1.0f);\n");
     }
   else
     {
       m_changePixelVals = "brightnessIncrement -= ";
       m_changePixelVals.append(incrStr);
-      m_changePixelVals.append(";\n outColour =vec4(outColour.r-brightnessIncrement,outColour.g-brightnessIncrement,outColour.b-brightnessIncrement,1.0f);\n");
     }
+  m_changePixelVals.append(";\n outColour =vec4(outColour.r+brightnessIncrement,outColour.g-brightnessIncrement,outColour.b-brightnessIncrement,1.0f);\n");
+
 }
