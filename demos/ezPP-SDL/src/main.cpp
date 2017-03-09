@@ -198,6 +198,7 @@ int main()
             case SDL_KEYDOWN:
             {
                 switch( event.key.keysym.sym )
+<<<<<<< HEAD
                 {
                 // if it's the escape key quit
                 case SDLK_ESCAPE :  quit = true; break;
@@ -215,6 +216,24 @@ int main()
                 default : break;
                 } // end of key process
             } // end of keydown
+=======
+                  {
+                  // if it's the escape key quit
+                  case SDLK_ESCAPE :  quit = true; break;
+                    break;
+
+                  case SDLK_g : myezPPer.ezAddEffect(effect1); myezPPer.ezCompileEffects(); break;
+                  case SDLK_n : myezPPer.ezAddEffect(effect2); myezPPer.ezCompileEffects(); break;
+                  case SDLK_e : myezPPer.ezAddEffect(effect3); myezPPer.ezCompileEffects(); break;
+                  case SDLK_b : myezPPer.ezAddEffect(effect4); myezPPer.ezCompileEffects(); break;
+                  case SDLK_s : myezPPer.ezAddEffect(effect5); myezPPer.ezCompileEffects(); break;
+                  case SDLK_m : myezPPer.ezAddEffect(effect6); myezPPer.ezCompileEffects(); break;
+                  case SDLK_c : myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
+                  case SDLK_RETURN : std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
+                  default : break;
+                  } // end of key process
+              } // end of keydown
+>>>>>>> origin/master
 
             default : break;
             } // end of event switch
