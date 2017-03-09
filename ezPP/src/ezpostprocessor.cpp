@@ -133,7 +133,6 @@ void ezPostProcessor::ezRender()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    //  glGenerateMipmap(GL_TEXTURE_2D);
     glBindVertexArray(quadVAO);
     glUseProgram(ezShaderProgram);
     glDrawArrays(GL_TRIANGLES, 0, 6);

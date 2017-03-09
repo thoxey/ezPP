@@ -11,3 +11,4 @@ public:
 };
 
 #endif // EZEDGEDETECT_H
+
