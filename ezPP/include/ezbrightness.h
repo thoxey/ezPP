@@ -1,6 +1,8 @@
 #ifndef EZBRIGHTNESS_H
 #define EZBRIGHTNESS_H
+
 #include "ezeffect.h"
+
 class ezBrightness : public ezEffect
 {
 public:

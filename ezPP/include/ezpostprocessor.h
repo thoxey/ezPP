@@ -78,6 +78,10 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   void ezSubRender();
   //----------------------------------------------------------------------------------------------------------------------
+  /// @brief prints any shader compilation errors to cerr
+  //----------------------------------------------------------------------------------------------------------------------
+  void debugShader(GLint _shader);
+  //----------------------------------------------------------------------------------------------------------------------
   /// @brief vector of effects on the current scene
   //----------------------------------------------------------------------------------------------------------------------
   std::vector<ezEffect> m_effectMasterVector;
@@ -137,11 +141,21 @@ private:
       out vec4 color;
       uniform sampler2D screenTexture;
       float offset;
-      float brightnessIncrement;
+      float brightnessIncrement = 0.0f;
       float kernel[9];
+      float factor;
       vec2 offsets[9];
       vec3 sampleTex[9];
       vec3 col;
+
+      float clamp(float toclamp)
+      {
+        if(toclamp > 255.0f)
+          toclamp = 255.0f;
+        else if (toclamp < 0.0f)
+          toclamp = 0.0f;
+      return toclamp / 255.0f;
+      }
 
       void main()
       {
@@ -162,8 +176,7 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief This is the end of the frag shader, it just pushes the texture as the colour and ends the shader
   //----------------------------------------------------------------------------------------------------------------------
-  std::string m_FragSourceEnd =
-      "color = outColour;\n}";
+  std::string m_FragSourceEnd ="color = outColour;\n}";
   //End Citation
 };
 

@@ -10,13 +10,13 @@ ezPostProcessor::~ezPostProcessor()
 }
 void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 {
-  const GLfloat quadVertices[24] =
-  {// Positions   // TexCoords
-    -1.0f,  1.0f,  0.0f, 1.0f,
-    -1.0f, -1.0f,  0.0f, 0.0f,
+    const GLfloat quadVertices[24] =
+    {// Positions   // TexCoords
+     -1.0f,  1.0f,  0.0f, 1.0f,
+     -1.0f, -1.0f,  0.0f, 0.0f,
      1.0f, -1.0f,  1.0f, 0.0f,
 
-    -1.0f,  1.0f,  0.0f, 1.0f,
+     -1.0f,  1.0f,  0.0f, 1.0f,
      1.0f, -1.0f,  1.0f, 0.0f,
      1.0f,  1.0f,  1.0f, 1.0f};
 #ifndef __APPLE__
@@ -107,16 +107,19 @@ void ezPostProcessor::ezCapture()
         std::cerr<<"No effects present, please add an effect using ezAddEffect()\n";
         return;
     }
+
     //Setting up shaders for Screen aligned quad
     vertShader = glCreateShader(GL_VERTEX_SHADER);
     const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
     glShaderSource(vertShader, 1, &vertSource, NULL);
     glCompileShader(vertShader);
+    debugShader(vertShader);
 
     fragShader = glCreateShader(GL_FRAGMENT_SHADER);
     const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
     glShaderSource(fragShader, 1, &fragSource, NULL);
     glCompileShader(fragShader);
+    debugShader(fragShader);
 
     glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 
@@ -138,35 +141,35 @@ void ezPostProcessor::ezCompileEffects()
     m_compiledVertShader = m_VertSource;
     std::string compilingFragShader = m_FragSource;
     for(auto i : m_effectMasterVector)
-      {
+    {
         if(i.getIsComplex())
-          {
-           ezSubRender();
-          }
+        {
+            ezSubRender();
+        }
         compilingFragShader += i.getPixelValChange();
-      }
+    }
     compilingFragShader += m_FragSourceEnd;
     m_compiledFragShader = compilingFragShader;
 }
 void ezPostProcessor::ezSubRender()
 {
-  std::cerr<<"TESTING Sub Rendering \n";
-  //'Cache' the effect to a framebuffer and repeat
+    std::cerr<<"TESTING Sub Rendering \n";
+    //'Cache' the effect to a framebuffer and repeat
 
-  //WIP
+    //WIP
 
-  GLuint newFramebuffer;
-  //takes the framebuffer and converts to texture
-  glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glViewport(0,0,m_screenWidth,m_screenHeight);
+    GLuint newFramebuffer;
+    //takes the framebuffer and converts to texture
+    glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
+    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glViewport(0,0,m_screenWidth,m_screenHeight);
 
-  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-  glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-  glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureColorbuffer, 0);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureColorbuffer, 0);
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void ezPostProcessor::ezRender()
@@ -195,5 +198,19 @@ std::string ezPostProcessor::returnEzFrag()
 }
 std::vector<ezEffect> ezPostProcessor::getEffectsVector()
 {
-  return m_effectMasterVector;
+    return m_effectMasterVector;
+}
+void ezPostProcessor::debugShader(GLint shader)
+{
+    GLint isCompiled = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
+    if(isCompiled == GL_FALSE)
+    {
+        GLint maxLength = 0;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &maxLength);
+        std::vector<GLchar> errorLog(maxLength);
+        glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
+        for(auto i : errorLog)
+            std::cerr<<i;
+    }
 }
