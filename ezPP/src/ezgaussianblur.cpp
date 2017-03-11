@@ -2,7 +2,7 @@
 
 ezGaussianBlur::ezGaussianBlur()
 {
-  id = 4;
+  ezID = 4;
   m_isComplex = true;
   m_isMultiple = false;
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02

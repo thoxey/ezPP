@@ -30,6 +30,7 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     glGenTextures(1, &textureColorbuffer);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    //Colour Buffer
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     //DepthBuffer
     //glTexImage2D(GL_TEXTURE_2D, 0,GL_DEPTH_COMPONENT24, m_screenWidth, m_screenWidth, 0,GL_DEPTH_COMPONENT, GL_FLOAT, 0);
@@ -66,35 +67,18 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     glBindVertexArray(0);
     //-------------------------------------end citation
 
+    m_compiledVertShader = m_VertSource;//Here incase I might want to change the vert shader for some reason
+
 }
 void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
 {
-    bool addToMV = true;
-
-    for(auto i : m_effectMasterVector)
-        if(i.id == _addedEffect.id && !i.getIsMultiple())
-        {
-            addToMV = false;
-            break;
-        }
-    if(addToMV)
-        m_effectMasterVector.push_back(_addedEffect);
-    //Put all effects into two categories (More may be needed in future
-    std::vector<ezEffect> simple;
-    std::vector<ezEffect> complex;
-    for(auto i : m_effectMasterVector)
+    if( std::find(m_ids.begin(), m_ids.end(), _addedEffect.ezID) == m_ids.end() )
     {
-        if(i.getIsComplex())
-            complex.push_back(i);
-        else
-            simple.push_back(i);
+        m_effectMasterVector.push_back(_addedEffect);
+        if(!_addedEffect.getIsMultiple())
+            m_ids.push_back(_addedEffect.ezID);
     }
-    //Sort effects in the array
-    m_effectMasterVector.clear();
-    for(auto i : complex)
-        m_effectMasterVector.push_back(i);
-    for(auto i : simple)
-        m_effectMasterVector.push_back(i);
+
 }
 void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
 {
@@ -137,19 +121,32 @@ void ezPostProcessor::ezCapture()
 void ezPostProcessor::ezCompileEffects()
 {
     //This takes the texture and carries out the operations on it defined in m_effectMasterVector
-    //This will be the 'meat' of the library and will likely be the biggest function
-    m_compiledVertShader = m_VertSource;
-    std::string compilingFragShader = m_FragSource;
-    for(auto i : m_effectMasterVector)
+    std::string compilingFragShader = "";
+    std::vector<int> multID;
+    for(ezEffect i : m_effectMasterVector)
     {
-        if(i.getIsComplex())
+        //if(i.getIsComplex() && getIsMultiple()) //No effects use this as of yet
+
+        if(i.getIsMultiple() && std::find(multID.begin(), multID.end(), i.ezID) != multID.end())
         {
-            ezSubRender();
+            multID.push_back(i.ezID);
+            for(auto i : m_effectMasterVector)
+                compilingFragShader.append(i.getPixelCalc());
+            compilingFragShader.append(i.getPixelValChange());
         }
-        compilingFragShader += i.getPixelValChange();
+        else if(i.getIsComplex())
+        {
+            compilingFragShader.append(i.getPixelCalc());
+            compilingFragShader.append(i.getPixelValChange());
+            //ezSubRender();
+        }
+        else
+        {
+            compilingFragShader.append(i.getPixelCalc());
+            compilingFragShader.append(i.getPixelValChange());
+        }
     }
-    compilingFragShader += m_FragSourceEnd;
-    m_compiledFragShader = compilingFragShader;
+    m_compiledFragShader = m_FragSource + compilingFragShader + m_FragSourceEnd;
 }
 void ezPostProcessor::ezSubRender()
 {
@@ -158,18 +155,26 @@ void ezPostProcessor::ezSubRender()
 
     //WIP
 
-    GLuint newFramebuffer;
+    GLuint   newFrameBuffer;
     //takes the framebuffer and converts to texture
-    glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
-    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    //    glBindFramebuffer(GL_FRAMEBUFFER, newFramebuffer);
+    //    glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+    //    glClear(GL_COLOR_BUFFER_BIT);
+    //    glViewport(0,0,m_screenWidth,m_screenHeight);
+
+    //    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    //    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    //    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureColorbuffer, 0);
+
+    //    glBindTexture(GL_TEXTURE_2D, 0);
+    glGenFramebuffers(1, &newFrameBuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, newFrameBuffer);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
     glClear(GL_COLOR_BUFFER_BIT);
-    glViewport(0,0,m_screenWidth,m_screenHeight);
-
-    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
     glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, textureColorbuffer, 0);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindVertexArray(quadVAO);
+    glUseProgram(ezShaderProgram);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 void ezPostProcessor::ezRender()
@@ -187,7 +192,10 @@ void ezPostProcessor::ezCleanUp()
     //An alternative to the destructor in case you wanted to turn off the effects and clean the buffers
     //But keep the post processor around to use later
 
+    m_ids.clear();
+    ezEffect tmp = m_effectMasterVector[0];
     m_effectMasterVector.clear();
+    m_effectMasterVector.push_back(tmp);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glClear(GL_COLOR_BUFFER_BIT);
     glBindVertexArray(0);

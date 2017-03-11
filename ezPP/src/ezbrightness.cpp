@@ -3,9 +3,9 @@
 ezBrightness::ezBrightness(bool _up, float _increment)
 {
     if(_up)
-        id = 8;
+        ezID = 8;
     else
-        id = 9;
+        ezID = 9;
     m_isComplex = false;
     m_isMultiple = true;
     float increment = 0.0f+_increment;
@@ -16,14 +16,16 @@ ezBrightness::ezBrightness(bool _up, float _increment)
 
     if(_up)
     {
-        m_changePixelVals = "brightnessIncrement += ";
-        m_changePixelVals.append(incrStr);
+        m_calcPixelVals = "brightnessIncrement += ";
+        m_calcPixelVals.append(incrStr);
+        m_calcPixelVals.append("f;\n");
     }
     else
     {
-        m_changePixelVals = "brightnessIncrement -= ";
-        m_changePixelVals.append(incrStr);
+        m_calcPixelVals = "brightnessIncrement -= ";
+        m_calcPixelVals.append(incrStr);
+        m_calcPixelVals.append("f;\n");
     }
-    m_changePixelVals.append("f;\n outColour =vec4(outColour.r+brightnessIncrement,outColour.g+brightnessIncrement,outColour.b+brightnessIncrement,1.0f);\n");
+    m_changePixelVals = "outColour =vec4(outColour.r+brightnessIncrement,outColour.g+brightnessIncrement,outColour.b+brightnessIncrement,1.0f);\n";
 
 }

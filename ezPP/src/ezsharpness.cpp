@@ -2,7 +2,7 @@
 
 ezSharpness::ezSharpness()
 {
-  id = 5;
+  ezID = 5;
   m_isComplex = true;
   m_isMultiple = false;
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02

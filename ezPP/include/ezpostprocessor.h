@@ -3,6 +3,7 @@
 #define DEBUGEZPPER
 #include <vector>
 #include <iostream>
+#include <algorithm>
 #ifndef __APPLE__
 #include <GL/glew.h>
 #include <GL/gl.h>
@@ -72,11 +73,12 @@ public:
   std::string returnEzFrag();
 
 
-private:
+
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief takes our texture and refreshes it with our current changes
   //----------------------------------------------------------------------------------------------------------------------
   void ezSubRender();
+  private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief prints any shader compilation errors to cerr
   //----------------------------------------------------------------------------------------------------------------------
@@ -89,6 +91,14 @@ private:
   /// @brief stores the active buffers
   //----------------------------------------------------------------------------------------------------------------------
   std::vector<GLuint> m_activeBuffers;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief stores the ids of all the effects
+  //----------------------------------------------------------------------------------------------------------------------
+  std::vector<int> m_ids;
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief takes our texture and refreshes it with our current changes
+  //----------------------------------------------------------------------------------------------------------------------
+  std::vector<std::string> m_effectSource;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The width and height of the screen
   //----------------------------------------------------------------------------------------------------------------------
@@ -140,10 +150,12 @@ private:
       in vec2 TexCoords;
       out vec4 color;
       uniform sampler2D screenTexture;
+
+      //Variables for different effects
       float offset;
       float brightnessIncrement = 0.0f;
       float kernel[9];
-      float factor;
+      float factor = 0;
       vec2 offsets[9];
       vec3 sampleTex[9];
       vec3 col;

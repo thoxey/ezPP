@@ -16,3 +16,7 @@ std::string ezEffect::getPixelValChange()
 {
   return m_changePixelVals;
 }
+std::string ezEffect::getPixelCalc()
+{
+  return m_calcPixelVals;
+}
