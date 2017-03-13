@@ -21,7 +21,12 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
    1.0f,  1.0f,  1.0f, 1.0f};
 #ifndef __APPLE__
   glewExperimental = GL_TRUE;
-  glewInit();
+  GLenum GlewError = glewInit();
+  // error check
+  if (GLEW_OK != GlewError)
+    {
+      std::cerr<<"Glew Error: "<<glewGetErrorString(GlewError)<<"\n";
+    }
 #endif
   m_screenHeight = _screenHeight;
   m_screenWidth = _screenWidth;
@@ -45,10 +50,10 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
   //Create a Depthbuffer (Renderbuffer)
-  glGenRenderbuffers(1, &depthBuffer);
-  glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_screenWidth, m_screenHeight);
-  glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
+  //glGenRenderbuffers(1, &depthBuffer);
+  //glBindRenderbuffer(GL_RENDERBUFFER, depthBuffer);
+  //glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, m_screenWidth, m_screenHeight);
+  //glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthBuffer);
 
   // Setup screen VAO
   glGenVertexArrays(1, &quadVAO);
@@ -69,7 +74,30 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 
   m_compiledVertShader = m_VertSource;//Here incase I might want to change the vert shader for some reason
 
+  vertShader = glCreateShader(GL_VERTEX_SHADER);
+  const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
+  glShaderSource(vertShader, 1, &vertSource, NULL);
+  glCompileShader(vertShader);
+  if(debugShader(vertShader))
+    std::cout<<"Vert Shader Initial Load OK \n";
+
+  fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
+  glShaderSource(fragShader, 1, &fragSource, NULL);
+  glCompileShader(fragShader);
+  if(debugShader(fragShader))
+    std::cout<<"Frag Shader Initial Load OK \n";
+
+  ezShaderProgram = glCreateProgram();
+  glAttachShader(ezShaderProgram, vertShader);
+  glAttachShader(ezShaderProgram, fragShader);
+  glLinkProgram(ezShaderProgram);
+  glDeleteShader(vertShader);
+  glDeleteShader(fragShader);
+
 }
+
+
 void ezPostProcessor::ezResize(int _screenWidth, int _screenHeight)
 {
   m_screenHeight = _screenHeight;
@@ -92,19 +120,16 @@ void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
 }
 void ezPostProcessor::ezCapture()
 {
+  GLint CurrVAO;//This is used to rebind the VAO that was bound on entering the function
+  glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &CurrVAO);
+
   if(m_effectMasterVector.size() == 0)
     {
       std::cerr<<"No effects present, please add an effect using ezAddEffect()\n";
       return;
     }
 
-  //Setting up shaders for Screen aligned quad
-  vertShader = glCreateShader(GL_VERTEX_SHADER);
-  const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
-  glShaderSource(vertShader, 1, &vertSource, NULL);
-  glCompileShader(vertShader);
-  debugShader(vertShader);
-
+  //Setting up shaders for Screen aligned quad, Vert no need to recompile since it never changes
   fragShader = glCreateShader(GL_FRAGMENT_SHADER);
   const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
   glShaderSource(fragShader, 1, &fragSource, NULL);
@@ -117,13 +142,15 @@ void ezPostProcessor::ezCapture()
   glAttachShader(ezShaderProgram, vertShader);
   glAttachShader(ezShaderProgram, fragShader);
   glLinkProgram(ezShaderProgram);
+  glDeleteShader(vertShader);
+  glDeleteShader(fragShader);
 
   //Redirects to my framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT);
   glViewport(0,0,m_screenWidth,m_screenHeight);
-  glBindVertexArray(0);
+
+  glBindVertexArray(CurrVAO);
 
 }
 void ezPostProcessor::ezCompileEffects()
@@ -131,42 +158,45 @@ void ezPostProcessor::ezCompileEffects()
   //This takes the texture and carries out the operations on it defined in m_effectMasterVector
   std::string compilingFragShader = "";
   std::vector<int> multID;
-  m_effectSource.clear();
-  std::cerr<<m_effectMasterVector.size()<<" - ";
-  for(ezEffect i : m_effectMasterVector)
+  m_effectSourceFirst.clear();
+  //m_effectSourceSecond.clear();
+  for(auto i : m_effectMasterVector)
     {
       //if(i.getIsComplex() && getIsMultiple()) //No effects use this as of yet
 
-      if(i.getIsMultiple() && std::find(multID.begin(), multID.end(), i.ezID) != multID.end())
+      if(i.getIsMultiple())
         {
-          multID.push_back(i.ezID);
-          for(auto i : m_effectMasterVector)
-            m_effectSource.push_back(i.getPixelCalc());
-          m_effectSource.push_back(i.getPixelValChange());
+          if(std::find(multID.begin(), multID.end(), i.ezID) == multID.end())
+            {
+              multID.push_back(i.ezID);
+              m_effectSourceFirst.push_back(i.getPixelCalc());
+              m_effectSourceSecond.push_back(i.getPixelValChange());
+            }
+          else
+            m_effectSourceFirst.push_back(i.getPixelCalc());
         }
+
       else if(i.getIsComplex())
         {
-          m_effectSource.push_back(i.getPixelCalc());
-          m_effectSource.push_back(i.getPixelValChange());
-          std::cerr<<m_effectSource.size()<<" - ";
-          for(auto i : m_effectSource)
+          m_effectSourceFirst.push_back(i.getPixelCalc());
+          m_effectSourceFirst.push_back(i.getPixelValChange());
+          for(auto i : m_effectSourceFirst)
             compilingFragShader.append(i);
-          //ezSubRender(compilingFragShader);
-          m_effectSource.pop_back();
-          m_effectSource.pop_back();
-          std::cerr<<m_effectMasterVector.size()<<"\n";
+          for(auto i : m_effectSourceSecond)
+            compilingFragShader.append(i);
+          ezSubRender(compilingFragShader);
+          m_effectSourceFirst.pop_back();
+          m_effectSourceFirst.pop_back();
         }
       else
         {
-          m_effectSource.push_back(i.getPixelValChange());
+          m_effectSourceFirst.push_back(i.getPixelValChange());
         }
     }
-  std::cerr<<m_effectSource.size()<<"\n";
-  for(auto i : m_effectSource)
-    {
-      std::cerr<<"I:"<<i;
+  for(auto i : m_effectSourceFirst)
     compilingFragShader.append(i);
-    }
+  for(auto i : m_effectSourceSecond)
+    compilingFragShader.append(i);
   m_compiledFragShader = m_FragSource + compilingFragShader + m_FragSourceEnd;
 
 }
@@ -174,16 +204,23 @@ void ezPostProcessor::ezSubRender(std::string _compilingFragShader)
 {
   m_compiledFragShader = m_FragSource + _compilingFragShader + m_FragSourceEnd;
 
-  std::cerr<<returnEzFrag()<<"\n";
+  //std::cerr<<returnEzFrag()<<"\n";
 
   GLuint newFrameBuffer;
   glGenFramebuffers(1, &newFrameBuffer);
   glBindFramebuffer(GL_FRAMEBUFFER, newFrameBuffer);
+  glBindVertexArray(quadVAO);
+
+  glLinkProgram(ezShaderProgram);
+  GLint texLoc = glGetUniformLocation(ezShaderProgram, "screenTexture");
+
+  glUseProgram(ezShaderProgram);
+  glUniform1i(texLoc, 0);
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
-  glBindVertexArray(quadVAO);
-  glUseProgram(ezShaderProgram);
+
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
@@ -193,9 +230,11 @@ void ezPostProcessor::ezRender()
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT);
   glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+
   glBindVertexArray(quadVAO);
   glUseProgram(ezShaderProgram);
   glDrawArrays(GL_TRIANGLES, 0, 6);
+  glBindVertexArray(0);
 }
 void ezPostProcessor::ezCleanUp()
 {
@@ -204,7 +243,7 @@ void ezPostProcessor::ezCleanUp()
 
   m_ids.clear();
   m_effectMasterVector.clear();
-  m_effectSource.clear();
+  m_effectSourceFirst.clear();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glClear(GL_COLOR_BUFFER_BIT);
   glBindVertexArray(0);
@@ -217,7 +256,7 @@ std::vector<ezEffect> ezPostProcessor::getEffectsVector()
 {
   return m_effectMasterVector;
 }
-void ezPostProcessor::debugShader(GLint shader)
+bool ezPostProcessor::debugShader(GLint shader)
 {
   GLint isCompiled = 0;
   glGetShaderiv(shader, GL_COMPILE_STATUS, &isCompiled);
@@ -229,5 +268,8 @@ void ezPostProcessor::debugShader(GLint shader)
       glGetShaderInfoLog(shader, maxLength, &maxLength, &errorLog[0]);
       for(auto i : errorLog)
         std::cerr<<i;
+      return false;
     }
+  else
+    return true;
 }
