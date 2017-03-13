@@ -123,6 +123,7 @@ int main()
     -0.8f, -0.8f, 0.0f,  0.2f, 1.0f, 0.2f,  // Bottom Left
     0.0f,  0.8f, -1.0f,  0.2f, 0.2f, 1.0f   // Top
   };
+
   GLuint VBO, VAO;
   glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &VBO);
@@ -175,8 +176,8 @@ int main()
   ez3x3Kernel     effect9(average, 2);
   ezBrightness    effect10(true, 0.1f);
   ezBrightness    effect11(false, 0.1f);
-  ezContrast      effect12(true, 100);
-  ezContrast      effect13(false, 100);
+  //ezContrast      effect12(true, 100);
+  //ezContrast      effect13(false, 100);
 
   myezPPer.ezAddEffect(effect0);
   myezPPer.ezCompileEffects();
@@ -218,8 +219,8 @@ int main()
                   case SDLK_3 :     myezPPer.ezAddEffect(effect9); myezPPer.ezCompileEffects(); break;
                   case SDLK_UP :    myezPPer.ezAddEffect(effect10); myezPPer.ezCompileEffects(); break;
                   case SDLK_DOWN :  myezPPer.ezAddEffect(effect11); myezPPer.ezCompileEffects(); break;
-                  case SDLK_RIGHT : myezPPer.ezAddEffect(effect12); myezPPer.ezCompileEffects();break;
-                  case SDLK_LEFT :  myezPPer.ezAddEffect(effect13); myezPPer.ezCompileEffects();break;
+                  //case SDLK_RIGHT : myezPPer.ezAddEffect(effect12); myezPPer.ezCompileEffects();break;
+                  //case SDLK_LEFT :  myezPPer.ezAddEffect(effect13); myezPPer.ezCompileEffects();break;
                   case SDLK_c :     myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
                   case SDLK_RETURN : std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
                   default : break;
