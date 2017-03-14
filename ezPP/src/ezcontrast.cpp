@@ -4,7 +4,6 @@ ezContrast::ezContrast(bool _up, int _increment)
 {
     ezID = 10;
     m_isComplex = false;
-    m_isMultiple = true;
     std::stringstream stream;
     stream << std::fixed << _increment;
     std::string incrStr = stream.str();

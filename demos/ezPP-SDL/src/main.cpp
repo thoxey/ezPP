@@ -176,8 +176,8 @@ int main()
   ez3x3Kernel     effect9(average, 2);
   ezBrightness    effect10(true, 0.1f);
   ezBrightness    effect11(false, 0.1f);
-  ezContrast      effect12(true, 10);
-  ezContrast      effect13(false, 10);
+  ezContrast      effect12(true, 100);
+  ezContrast      effect13(false, 100);
 
   myezPPer.ezAddEffect(effect0);
   myezPPer.ezCompileEffects();

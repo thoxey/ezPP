@@ -3,7 +3,6 @@
 ez3x3Kernel::ez3x3Kernel(std::string kernel, int _id)
 {
     ezID = 100+_id;
-    m_isMultiple = false;
     m_isComplex = true;
     //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
     m_calcPixelVals ="kernel = float[](\n";

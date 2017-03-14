@@ -14,18 +14,6 @@
 
 class ezPostProcessor
 {
-  //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-  //Making into a Singleton, kept seperate for ease of reading
-private : static ezPostProcessor *instance;
-public : static ezPostProcessor *getInstance()
-  {
-    if(!instance)
-      instance = new ezPostProcessor;
-    return instance;
-  }
-  //=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
-
-
 public:
   //Constructer & Destructor
   //----------------------------------------------------------------------------------------------------------------------
@@ -68,25 +56,25 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief applies 'compiled' texture to our camera covering quad
   //----------------------------------------------------------------------------------------------------------------------
-  void ezRender();
+  void ezRender(GLuint frameBuffer = 0);
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief alternative dtor, clears buffers with killing PPer if needed
   //----------------------------------------------------------------------------------------------------------------------
   void ezCleanUp();
-
+  //----------------------------------------------------------------------------------------------------------------------
+  /// @brief returns our complete frag shader
+  //----------------------------------------------------------------------------------------------------------------------
   std::string returnEzFrag();
-
-
-
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief takes our texture and refreshes it with our current changes
   //----------------------------------------------------------------------------------------------------------------------
   void ezSubRender(std::string _compilingFragShader);
-  private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief prints any shader compilation errors to cerr
   //----------------------------------------------------------------------------------------------------------------------
   bool debugShader(GLint _shader);
+private:
+
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief vector of effects on the current scene
   //----------------------------------------------------------------------------------------------------------------------
@@ -122,16 +110,15 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The buffers for holding the different textures
   //----------------------------------------------------------------------------------------------------------------------
-  GLuint textureColorbuffer, depthBuffer;
+  GLuint m_textureColorbuffer1, m_textureColorbuffer2, m_activeTexture;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The frame buffer object that we will manipulate
   //----------------------------------------------------------------------------------------------------------------------
-  GLuint framebuffer;
+  GLuint m_framebuffer1, m_framebuffer2, m_activeFramebuffer;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The compiled shaders that get applied to the screenspace quad
   //----------------------------------------------------------------------------------------------------------------------
   std::string m_compiledFragShader, m_compiledVertShader = "";
-
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The source for the vertex shader it just passes on the texture coordinates
@@ -169,10 +156,10 @@ public:
 
       float clamp(float toclamp)
       {
-        if(toclamp > 255.0f)
-          toclamp = 255.0f;
-        else if (toclamp < 0.0f)
-          toclamp = 0.0f;
+      if(toclamp > 255.0f)
+      toclamp = 255.0f;
+      else if (toclamp < 0.0f)
+      toclamp = 0.0f;
       return toclamp / 255.0f;
       }
 

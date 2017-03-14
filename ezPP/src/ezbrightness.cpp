@@ -7,7 +7,6 @@ ezBrightness::ezBrightness(bool _up, float _increment)
     else
         ezID = 9;
     m_isComplex = false;
-    m_isMultiple = true;
     float increment = 0.0f+_increment;
 
     std::stringstream stream;
