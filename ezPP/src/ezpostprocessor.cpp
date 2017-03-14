@@ -80,6 +80,7 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   //-------------------------------------end citation
 
   m_compiledVertShader = m_VertSource;//Here incase I might want to change the vert shader for some reason
+  m_compiledFragShader = m_FragSource + m_FragSourceEnd;
 
   vertShader = glCreateShader(GL_VERTEX_SHADER);
   const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
@@ -112,12 +113,8 @@ void ezPostProcessor::ezResize(int _screenWidth, int _screenHeight)
 
 void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
 {
-  if( std::find(m_ids.begin(), m_ids.end(), _addedEffect.ezID) == m_ids.end() )
-    {
-      m_effectMasterVector.push_back(_addedEffect);
-      m_ids.push_back(_addedEffect.ezID);
-    }
-
+  m_effectMasterVector.push_back(_addedEffect);
+  m_ids.push_back(_addedEffect.ezID);
 }
 void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
 {
@@ -130,7 +127,7 @@ void ezPostProcessor::ezCapture()
 
   if(m_effectMasterVector.size() == 0)
     {
-      std::cerr<<"No effects present, please add an effect using ezAddEffect()\n";
+      std::cerr<<"No effects present, pleaseezPostProcessor myezPPer;\n";
       return;
     }
 
@@ -152,69 +149,62 @@ void ezPostProcessor::ezCapture()
 
   //Redirects to my framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, m_activeFramebuffer);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glViewport(0,0,m_screenWidth,m_screenHeight);
 
   glBindVertexArray(CurrVAO);
 
 }
+
+
 void ezPostProcessor::ezCompileEffects()
 {
   //This takes the texture and carries out the operations on it defined in m_effectMasterVector
   std::string compilingFragShader = "";
-  m_effectSourceFirst.clear();
-  //m_effectSourceSecond.clear();
+  m_effectSource.clear();
+
   for(auto i : m_effectMasterVector)
     {
       if(i.getIsComplex())
         {
-          m_effectSourceFirst.push_back(i.getPixelCalc());
-          m_effectSourceFirst.push_back(i.getPixelValChange());
-          ezRender(m_activeFramebuffer);
-          compilingFragShader = "";
+          m_effectSource.push_back(i.getPixelCalc());
+          m_effectSource.push_back(i.getPixelValChange());
+          break;
         }
       else
         {
-          m_effectSourceFirst.push_back(i.getPixelCalc());
-          m_effectSourceFirst.push_back(i.getPixelValChange());
+          m_effectSource.push_back(i.getPixelCalc());
+          m_effectSource.push_back(i.getPixelValChange());
         }
     }
 
-  for(auto i : m_effectSourceFirst)
+  for(auto i : m_effectSource)
     compilingFragShader.append(i);
-
-
-  for(auto i : m_effectSourceSecond)
-    compilingFragShader.append(i);
-
 
   m_compiledFragShader = m_FragSource + compilingFragShader + m_FragSourceEnd;
 
-}
+  GLuint newFragShader = glCreateShader(GL_FRAGMENT_SHADER);
+  const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
+  glShaderSource(newFragShader, 1, &fragSource, NULL);
+  glCompileShader(newFragShader);
+  debugShader(newFragShader);
 
-void ezPostProcessor::ezRender(GLuint frameBuffer)
-{
-  //pushes to screen our newer sexier post processed image
-  if(m_activeFramebuffer != m_framebuffer1)
-    m_activeFramebuffer = m_framebuffer1;
-  else
-    m_activeFramebuffer = m_framebuffer2;
+  glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
 
-  if(m_activeTexture != m_textureColorbuffer1)
-    m_activeTexture = m_textureColorbuffer1;
-  else
-    m_activeTexture = m_textureColorbuffer2;
+  GLuint newEzShaderProgram = glCreateProgram();
+  glAttachShader(newEzShaderProgram, vertShader);
+  glAttachShader(newEzShaderProgram, newFragShader);
+  glLinkProgram(newEzShaderProgram);
+  glDeleteShader(vertShader);
+  glDeleteShader(newEzShaderProgram);
 
-  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-  glBindVertexArray(quadVAO);
+  glLinkProgram(newEzShaderProgram);
+  GLint texLoc = glGetUniformLocation(newEzShaderProgram, "screenTexture");
 
-  glLinkProgram(ezShaderProgram);
-  GLint texLoc = glGetUniformLocation(ezShaderProgram, "screenTexture");
-
-  glUseProgram(ezShaderProgram);
+  glUseProgram(newEzShaderProgram);
   glUniform1i(texLoc, 0);
 
-  if(m_activeTexture != m_textureColorbuffer1)
+  if(m_activeFramebuffer != m_framebuffer1)
     glActiveTexture(GL_TEXTURE0);
   else
     glActiveTexture(GL_TEXTURE1);
@@ -222,8 +212,41 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
   glBindTexture(GL_TEXTURE_2D, m_activeTexture);
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_activeTexture, 0);
 
+  m_activeShaders.push_back(newEzShaderProgram);
+
+  m_compiledFragShader = m_FragSource + m_FragSourceEnd;
+}
+
+void ezPostProcessor::ezRender(GLuint frameBuffer)
+{
+  glBindVertexArray(quadVAO);
+
+  for(auto i : m_activeShaders)
+    {
+      if(m_activeFramebuffer != m_framebuffer1)
+        m_activeFramebuffer = m_framebuffer1;
+      else
+        m_activeFramebuffer = m_framebuffer2;
+
+      if(m_activeTexture != m_textureColorbuffer1)
+        m_activeTexture = m_textureColorbuffer1;
+      else
+        m_activeTexture = m_textureColorbuffer2;
+
+      glBindFramebuffer(GL_FRAMEBUFFER, m_activeFramebuffer);
+
+      glUseProgram(i);
+
+      glDrawArrays(GL_TRIANGLES, 0, 6);
+    }
+
+  glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
+  glUseProgram(ezShaderProgram);
+
   glDrawArrays(GL_TRIANGLES, 0, 6);
   glBindVertexArray(0);
+
 
 }
 void ezPostProcessor::ezCleanUp()
@@ -233,10 +256,11 @@ void ezPostProcessor::ezCleanUp()
 
   m_ids.clear();
   m_effectMasterVector.clear();
-  m_effectSourceFirst.clear();
-  m_effectSourceSecond.clear();
+  m_effectSource.clear();
+  m_shaders.clear();
+  m_activeShaders.clear();
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glBindVertexArray(0);
 }
 std::string ezPostProcessor::returnEzFrag()
