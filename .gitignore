@@ -43,3 +43,5 @@ ezPP/ezPP.pro.user.fdf0b8f
 ezPP/Makefile
 
 ezPP/.qmake.stash
+
+demos/ezPP-SDLtextured/ezPPSDLTextured.pro.user

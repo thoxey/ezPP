@@ -1,6 +1,7 @@
 #include <SDL.h>
 #include <cstdlib>
 #include <iostream>
+
 #ifndef __APPLE__
 #include <GL/glew.h>
 #include <GL/gl.h>
