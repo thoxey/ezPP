@@ -180,7 +180,7 @@ int main()
   ezContrast      effect12(true, 100);
   ezContrast      effect13(false, 100);
 
-  myezPPer.ezAddEffect(effect0);
+  myezPPer.ezAddEffect(effect2);
   myezPPer.ezCompileEffects();
 
   while(!quit)
@@ -227,7 +227,6 @@ int main()
                   default : break;
                   } // end of key process
               } // end of keydown
-
             default : break;
             } // end of event switch
         } // end of poll events
