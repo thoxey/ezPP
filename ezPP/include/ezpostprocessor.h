@@ -141,7 +141,7 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   std::string m_VertSource =
       R"m_VertSource(
-      #version 330 core
+      #version 410 core
       layout (location = 0) in vec2 position;
       layout (location = 1) in vec2 texCoords;
       out vec2 TexCoords;
@@ -156,7 +156,7 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   std::string m_FragSource =
       R"m_FragSource(
-      #version 330 core
+      #version 410 core
       in vec2 TexCoords;
       out vec4 color;
       uniform sampler2D screenTexture;

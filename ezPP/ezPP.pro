@@ -5,4 +5,3 @@ INCLUDEPATH += $$PWD/include/
 SOURCES += $$PWD/src/*.cpp
 TARGET = $$PWD/lib/ezPP
 OBJECTS_DIR=obj
-

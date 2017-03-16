@@ -27,7 +27,7 @@
 /// @author Jon Macey & Tom Hoxey
 //--------------------------------------------------------------------------------------------------------------------------------------------
 
-const GLchar* vertexShaderSource = "#version 330 core\n"
+const GLchar* vertexShaderSource = "#version 410 core\n"
                                    "layout (location = 0) in vec3 position;\n"
                                    "layout (location = 1) in vec3 color;\n"
                                    "out vec3 ourColor;\n"
@@ -36,7 +36,7 @@ const GLchar* vertexShaderSource = "#version 330 core\n"
                                    "gl_Position = vec4(position, 1.0);\n"
                                    "ourColor = color;\n"
                                    "}\0";
-const GLchar* fragmentShaderSource = "#version 330 core\n"
+const GLchar* fragmentShaderSource = "#version 410 core\n"
                                      "in vec3 ourColor;\n"
                                      "out vec4 color;\n"
                                      "void main()\n"
@@ -60,8 +60,8 @@ int main()
   //Init SDL
   SDL_Init(SDL_INIT_VIDEO);
   SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+  SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
   SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
   SDL_Window* window = SDL_CreateWindow("OpenGL", 100, 100, SCREENSIZE, SCREENSIZE, SDL_WINDOW_OPENGL);
   /*SDL_GLContext context = */SDL_GL_CreateContext(window);

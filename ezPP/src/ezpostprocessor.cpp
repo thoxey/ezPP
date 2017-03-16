@@ -94,7 +94,7 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil2);
   //---------------------------------------------------------------------------------------------------------
 
-  //Unbind everything so it was like this never happened! (I wont tell if you dont)
+  //Unbind everything so it was like this never happened!
   glBindTexture(GL_TEXTURE_2D, 0);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -168,25 +168,23 @@ void ezPostProcessor::ezCompileEffects()
   m_effectSource.clear();
   m_activeShaders.clear();
 
+  //For each effect in the list make a shader and push the program to a vector to use later
   for(auto i : m_effectMasterVector)
     {
+      //Concatinate our shader
+      compilingFragShader.append(m_FragSource);
       compilingFragShader.append(i.getPixelCalc());
       compilingFragShader.append(i.getPixelValChange());
+      compilingFragShader.append(m_FragSourceEnd);
 
-
-      m_compiledFragShader = m_FragSource + compilingFragShader + m_FragSourceEnd;
-
-      glBindTexture(GL_TEXTURE_2D, m_activeTexture);
-      glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_activeTexture, 0);
-
-
+      //Create compile and check our vert shader
       GLuint newvertShader = glCreateShader(GL_VERTEX_SHADER);
       const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
       glShaderSource(newvertShader, 1, &vertSource, NULL);
       glCompileShader(newvertShader);
       debugShader(newvertShader);
 
-
+      //Create compile and check our frag shader
       GLuint newFragShader = glCreateShader(GL_FRAGMENT_SHADER);
       const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
       glShaderSource(newFragShader, 1, &fragSource, NULL);
@@ -194,22 +192,21 @@ void ezPostProcessor::ezCompileEffects()
       if(debugShader(newFragShader))
         std::cout<<"New Frag Shader OK\n";
 
-      glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-
+      //Create our shader program
       GLuint newEzShaderProgram = glCreateProgram();
       glAttachShader(newEzShaderProgram, newvertShader);
       glAttachShader(newEzShaderProgram, newFragShader);
-
+      //glBindFragDataLocation??
       glLinkProgram(newEzShaderProgram);
-      glUseProgram(newEzShaderProgram);
 
+      //Clean up
+      glDeleteShader(newvertShader);
+      glDeleteShader(newFragShader);
 
+      //Push back to our shader vector to use it later and then res
       m_activeShaders.push_back(newEzShaderProgram);
-      glDeleteShader(vertShader);
-      glDeleteShader(fragShader);
-      m_compiledFragShader = m_FragSource + m_FragSourceEnd;
     }
-
+  //Set this step as true so we can continue
   m_compiled = true;
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -238,11 +235,15 @@ void ezPostProcessor::ezCapture()
     }
   //////////////////////////////////////////SAFETY CHECKS
 
-  //Redirects to my framebuffer
+  //Redirect to my framebuffer
+  //This seems lacking??
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glViewport(0,0,m_screenWidth,m_screenHeight);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_STENCIL_TEST);
 
+  //Set stage as true so we can continue
   m_captured = true;
 
 }
@@ -268,50 +269,75 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
       return;
     }
   //////////////////////////////////////////SAFETY CHECKS
+
+  //Bind the Screen Space Quad
   glBindVertexArray(quadVAO);
 
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_STENCIL_TEST);
+  //Turn off the depth and stencil test
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_STENCIL_TEST);
+
+  //Bool used to swap the texture for pushing to the screen
+  GLuint lastTex;
+
+  //Bool used to swap between buffers
   bool pingPong = true;
+
+  //Swap between the two FBOs using the last ones texture
   for(auto i : m_activeShaders)
     {
       if(pingPong)
         {
+          //Bind FB1 and bind tex2, and then push them to the shader and draw
           glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
           glUseProgram(i);
           glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer2, 0);
+          glUniform1i(glGetUniformLocation(i, "screenTexture"), 0);
           glDrawArrays(GL_TRIANGLES, 0, 6);
+
           //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-          m_activeTexture = m_textureColorbuffer2;
+
+          //Cause swap
+          lastTex = m_textureColorbuffer1;
           pingPong = false;
         }
       else
         {
+          //Bind FB2 and bind tex1, and then push them to the shader and draw
           glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
           glUseProgram(i);
           glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
           glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
+          glUniform1i(glGetUniformLocation(i, "screenTexture"), 0);
           glDrawArrays(GL_TRIANGLES, 0, 6);
+
           //glBindFramebuffer(GL_FRAMEBUFFER, 0);
-          m_activeTexture = m_textureColorbuffer1;
+
+          //Cause swap
+          lastTex = m_textureColorbuffer2;
           pingPong = true;
         }
     }
 
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_STENCIL_TEST);
+  //Renable the depth test
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_STENCIL_TEST);
+
+  //Bind our screen texture
+  glUseProgram(ezShaderProgram);
+  glBindTexture(GL_TEXTURE_2D, lastTex);
+  glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
+
+  //Bind to the default framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-
-  glBindTexture(GL_TEXTURE_2D, m_activeTexture);
-  //glLinkProgram(ezShaderProgram);
-  glUseProgram(ezShaderProgram);
-  //glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
+  //Draw to screen
   glDrawArrays(GL_TRIANGLES, 0, 6);
 
+  //Rebind the VAO that was bound on entering, leaving things as they were found
   glBindVertexArray(CurrVAO);
 
 }
