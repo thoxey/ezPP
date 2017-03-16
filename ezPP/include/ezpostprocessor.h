@@ -128,6 +128,10 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   GLuint m_framebuffer1, m_framebuffer2, m_activeFramebuffer;
   //----------------------------------------------------------------------------------------------------------------------
+  /// @brief The frame buffer object that we will manipulate
+  //----------------------------------------------------------------------------------------------------------------------
+  GLuint m_DepthStencil1, m_DepthStencil2, m_activeDepthStencil;
+  //----------------------------------------------------------------------------------------------------------------------
   /// @brief The shader source for the final render
   //----------------------------------------------------------------------------------------------------------------------
   std::string m_compiledFragShader, m_compiledVertShader = "";
@@ -162,6 +166,7 @@ private:
       float brightnessIncrement = 0.0f;
       float kernel[9];
       float factor = 0;
+      float average;
       vec2 offsets[9];
       vec3 sampleTex[9];
       vec3 col;

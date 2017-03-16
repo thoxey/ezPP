@@ -21,7 +21,7 @@
 #include <ezbrightness.h>
 #include <ezcontrast.h>
 
-#define SCREENSIZE 800
+#define SCREENSIZE 900
 
 //--------------------------------------------------------------------------------------------------------------------------------------------
 /// @author Jon Macey & Tom Hoxey
@@ -120,9 +120,9 @@ int main()
   //---------------------------------------------------------------------------------------------------------------------------------------------------DECLARE VERTICIES FOR TRIANGLE
   GLfloat vertices[] = {
     // Positions         // Colors
-    0.8f, -0.8f, 1.0f,  1.0f, 0.2f, 0.2f,  // Bottom Right
-    -0.8f, -0.8f, 0.0f,  0.2f, 1.0f, 0.2f,  // Bottom Left
-    0.0f,  0.8f, -1.0f,  0.2f, 0.2f, 1.0f   // Top
+    0.8f,  -0.8f,  0.0f,  1.0f, 0.2f, 0.2f,  // Bottom Right
+    -0.8f, -0.8f,  0.0f,  0.2f, 1.0f, 0.2f,  // Bottom Left
+    0.0f,   0.8f,  0.0f,  0.2f, 0.2f, 1.0f   // Top
   };
 
   GLuint VBO, VAO;
@@ -180,7 +180,7 @@ int main()
   ezContrast      effect12(true, 100);
   ezContrast      effect13(false, 100);
 
-  myezPPer.ezAddEffect(effect1);
+  myezPPer.ezAddEffect(effect0);
   myezPPer.ezCompileEffects();
 
   while(!quit)
