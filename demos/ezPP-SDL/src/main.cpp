@@ -180,7 +180,7 @@ int main()
   ezContrast      effect12(true, 100);
   ezContrast      effect13(false, 100);
 
-  myezPPer.ezAddEffect(effect0);
+  myezPPer.ezAddEffect(effect1);
   myezPPer.ezCompileEffects();
 
   while(!quit)

@@ -36,5 +36,6 @@
       vec2(0.0f,    -offset), // bottom-center
       vec2(offset,  -offset)  // bottom-right
       );
-      color = outColour;
+      outColour = vec4(1.0-outColour.r,1.0-outColour.g,1.0-outColour.b, 1.0);
+color = outColour;
 }
