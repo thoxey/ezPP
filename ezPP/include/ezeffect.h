@@ -8,6 +8,15 @@
 #endif
 #include <string>
 #include <sstream>
+
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ezEffect.h
+/// @brief The parent class for all of the implementable effects
+/// @author Tom Hoxey
+/// @version 1.0
+/// @date 20/3/17 Initial version
+//----------------------------------------------------------------------------------------------------------------------
+
 class ezEffect
 {
 public:

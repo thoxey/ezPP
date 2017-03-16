@@ -1,15 +1,31 @@
 #include "ezpostprocessor.h"
-
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ezPostProcessor.cpp
+/// @brief The implementation of the ezPostProcessor class
+//----------------------------------------------------------------------------------------------------------------------
 ezPostProcessor::ezPostProcessor()
 {
     //Initialize ezPPer
+    m_inited = false;
+    m_captured = false;
 }
+//----------------------------------------------------------------------------------------------------------------------
 ezPostProcessor::~ezPostProcessor()
 {
     //Clear buffer etc.
 }
+//----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 {
+    //////////////////////////////////////////SAFETY CHECKS
+    GLint contextTest;
+    glGetIntegerv(GL_MAJOR_VERSION, &contextTest);
+    if(contextTest < 3)
+    {
+        std::cerr<<"No Valid Open GL Context Detected\nOr major GL version is below 3";
+        return;
+    }
+    //////////////////////////////////////////SAFETY CHECKS
     const GLfloat quadVertices[24] =
     {// Positions   // TexCoords
      -1.0f,  1.0f,  0.0f, 1.0f,
@@ -31,6 +47,13 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     m_screenHeight = _screenHeight;
     m_screenWidth = _screenWidth;
     //-------------------------------------"Adapted code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
+
+
+    //Create a framebuffer
+    glGenFramebuffers(1, &m_framebuffer1);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
+
+
     //Create a color attachment texture
     glGenTextures(1, &m_textureColorbuffer1);
     glActiveTexture(GL_TEXTURE0);
@@ -38,7 +61,11 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
+
+
+    glGenFramebuffers(1, &m_framebuffer2);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
 
     glGenTextures(1, &m_textureColorbuffer2);
     glActiveTexture(GL_TEXTURE1);
@@ -46,19 +73,10 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glBindTexture(GL_TEXTURE_2D, 0);
-
-    //Create a framebuffer
-    glGenFramebuffers(1, &m_framebuffer1);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-    glGenFramebuffers(1, &m_framebuffer2);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer2, 0);
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
+    glBindTexture(GL_TEXTURE_2D, 0);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     m_activeFramebuffer = m_framebuffer1;
     m_activeTexture = m_textureColorbuffer1;
 
@@ -102,46 +120,31 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     glLinkProgram(ezShaderProgram);
     glDeleteShader(vertShader);
     glDeleteShader(fragShader);
+
+    m_inited = true;
 }
-
-
+//----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezResize(int _screenWidth, int _screenHeight)
 {
     m_screenHeight = _screenHeight;
     m_screenWidth = _screenWidth;
 }
-
+//----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezAddEffect(ezEffect _addedEffect)
 {
     m_effectMasterVector.push_back(_addedEffect);
     m_ids.push_back(_addedEffect.ezID);
 }
-void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
-{
-    //Convert from void, makes templates from multiple efects, e.g. old film with grain, B&W and DoF
-}
-void ezPostProcessor::ezCapture()
-{
-    GLint CurrVAO;//This is used to rebind the VAO that was bound on entering the function
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &CurrVAO);
-
-    if(m_effectMasterVector.size() == 0)
-    {
-        std::cerr<<"No effects present, add an ezNoEffect if you want no effects\n";
-        return;
-    }
-    //Redirects to my framebuffer
-    glBindFramebuffer(GL_FRAMEBUFFER, m_activeFramebuffer);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glViewport(0,0,m_screenWidth,m_screenHeight);
-
-    glBindVertexArray(CurrVAO);
-
-}
-
-
+//----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezCompileEffects()
 {
+    //////////////////////////////////////////SAFETY CHECKS
+    if(!m_inited)
+    {
+        std::cerr<<"ezCompile called before ezInit \n";
+        return;
+    }
+    //////////////////////////////////////////SAFETY CHECKS
     //This takes the texture and carries out the operations on it defined in m_effectMasterVector
     std::string compilingFragShader = "";
     m_effectSource.clear();
@@ -165,6 +168,21 @@ void ezPostProcessor::ezCompileEffects()
         compilingFragShader.append(i);
 
     m_compiledFragShader = m_FragSource + compilingFragShader + m_FragSourceEnd;
+
+    if(m_activeFramebuffer != m_framebuffer1)
+    {
+        m_activeTexture = m_textureColorbuffer2;
+        glActiveTexture(GL_TEXTURE1);
+    }
+    else
+    {
+        m_activeTexture = m_textureColorbuffer1;
+        glActiveTexture(GL_TEXTURE0);
+    }
+
+    glBindTexture(GL_TEXTURE_2D, m_activeTexture);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_activeTexture, 0);
+
 
     GLuint newvertShader = glCreateShader(GL_VERTEX_SHADER);
     const GLchar * vertSource = (GLchar *)m_compiledVertShader.c_str();
@@ -192,28 +210,72 @@ void ezPostProcessor::ezCompileEffects()
     glUseProgram(newEzShaderProgram);
     glUniform1i(glGetUniformLocation(newEzShaderProgram, "screenTexture"), 0);
 
-    if(m_activeFramebuffer != m_framebuffer1)
-    {
-        m_activeTexture = m_textureColorbuffer2;
-        glActiveTexture(GL_TEXTURE1);
-    }
-    else
-    {
-        m_activeTexture = m_textureColorbuffer1;
-        glActiveTexture(GL_TEXTURE0);
-    }
-
-    glBindTexture(GL_TEXTURE_2D, m_activeTexture);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_activeTexture, 0);
-
     m_activeShaders.push_back(newEzShaderProgram);
     glDeleteShader(vertShader);
     glDeleteShader(newEzShaderProgram);
     m_compiledFragShader = m_FragSource + m_FragSourceEnd;
-}
 
+    m_compiled = true;
+}
+//----------------------------------------------------------------------------------------------------------------------
+void ezPostProcessor::ezMakePreset(std::vector<ezEffect> _preset)
+{
+    //Convert from void, makes templates from multiple efects, e.g. old film with grain, B&W and DoF
+}
+//----------------------------------------------------------------------------------------------------------------------
+void ezPostProcessor::ezCapture()
+{
+    //////////////////////////////////////////SAFETY CHECKS
+    if(!m_inited)
+    {
+        std::cerr<<"ezCapture called before ezInit \n";
+        return;
+    }
+    else if(!m_compiled)
+    {
+        std::cerr<<"ezCapture called before ezCompile \n";
+        return;
+    }
+
+    if(m_effectMasterVector.size() == 0)
+    {
+        std::cerr<<"No effects present, add an ezNoEffect if you want no effects\n";
+        return;
+    }
+    //////////////////////////////////////////SAFETY CHECKS
+
+    //Redirects to my framebuffer
+    glBindFramebuffer(GL_FRAMEBUFFER, m_activeFramebuffer);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0,0,m_screenWidth,m_screenHeight);
+
+
+
+    m_captured = true;
+
+}
+//----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezRender(GLuint frameBuffer)
 {
+    //////////////////////////////////////////SAFETY CHECKS
+    GLint CurrVAO;//This is used to rebind the VAO that was bound on entering the function
+    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &CurrVAO);
+    if(!m_inited)
+    {
+        std::cerr<<"ezRender called before ezInit \n";
+        return;
+    }
+    else if(!m_compiled)
+    {
+        std::cerr<<"ezRender called before ezCompile \n";
+        return;
+    }
+    else if(!m_captured)
+    {
+        std::cerr<<"ezRender called before ezCapture \n";
+        return;
+    }
+    //////////////////////////////////////////SAFETY CHECKS
     glBindVertexArray(quadVAO);
 
     for(auto i : m_activeShaders)
@@ -245,13 +307,19 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glUseProgram(ezShaderProgram);
-    glBindVertexArray(quadVAO);
+
     glBindTexture(GL_TEXTURE_2D, m_activeTexture);
+    glLinkProgram(ezShaderProgram);
+    glUseProgram(ezShaderProgram);
+    glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
     glDrawArrays(GL_TRIANGLES, 0, 6);
     glBindVertexArray(0);
 
+
+    glBindVertexArray(CurrVAO);
+
 }
+//----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezCleanUp()
 {
     //An alternative to the destructor in case you wanted to turn off the effects and clean the buffers
@@ -268,14 +336,17 @@ void ezPostProcessor::ezCleanUp()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBindVertexArray(0);
 }
+//----------------------------------------------------------------------------------------------------------------------
 std::string ezPostProcessor::returnEzFrag()
 {
     return m_compiledFragShader + "\n";
 }
+//----------------------------------------------------------------------------------------------------------------------
 std::vector<ezEffect> ezPostProcessor::getEffectsVector()
 {
     return m_effectMasterVector;
 }
+//----------------------------------------------------------------------------------------------------------------------
 bool ezPostProcessor::debugShader(GLint shader)
 {
     GLint isCompiled = 0;
@@ -294,3 +365,4 @@ bool ezPostProcessor::debugShader(GLint shader)
     else
         return true;
 }
+//----------------------------------------------------------------------------------------------------------------------

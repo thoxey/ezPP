@@ -12,6 +12,14 @@
 #endif
 #include "ezeffect.h"
 
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ezPostProcessor.h
+/// @brief The 'master class' that handles the storage, processing, and exectuction of the effects
+/// @author Tom Hoxey
+/// @version 1.0
+/// @date 20/3/17 Initial version
+//----------------------------------------------------------------------------------------------------------------------
+
 class ezPostProcessor
 {
 public:
@@ -96,9 +104,9 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   std::vector<std::string> m_shaders;
   //----------------------------------------------------------------------------------------------------------------------
-  /// @brief Check ezCapture has been called before ez render
+  /// @brief Used to check the sequence init compile capture has been called in the right order
   //----------------------------------------------------------------------------------------------------------------------
-  bool m_captured;
+  bool m_inited, m_compiled, m_captured;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The width and height of the screen
   //----------------------------------------------------------------------------------------------------------------------

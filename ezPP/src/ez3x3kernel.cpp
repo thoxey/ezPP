@@ -1,5 +1,8 @@
 #include "ez3x3kernel.h"
-
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ez3x3Kernel.cpp
+/// @brief The implementation of the ez3x3Kernel class
+//----------------------------------------------------------------------------------------------------------------------
 ez3x3Kernel::ez3x3Kernel(std::string kernel, int _id)
 {
     ezID = 100+_id;
@@ -20,4 +23,4 @@ ez3x3Kernel::ez3x3Kernel(std::string kernel, int _id)
             m_changePixelVals = "outColour = vec4(col, 1.0);\n";
     //End Citation
 }
-
+//----------------------------------------------------------------------------------------------------------------------

@@ -1,5 +1,8 @@
 #include "ezbrightness.h"
-
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ezBrightness.cpp
+/// @brief The implementation of the ezBrightness class
+//----------------------------------------------------------------------------------------------------------------------
 ezBrightness::ezBrightness(bool _up, float _increment)
 {
     if(_up)
@@ -28,3 +31,4 @@ ezBrightness::ezBrightness(bool _up, float _increment)
     m_changePixelVals = "outColour =vec4(outColour.r+brightnessIncrement,outColour.g+brightnessIncrement,outColour.b+brightnessIncrement,1.0f);\n";
 
 }
+//----------------------------------------------------------------------------------------------------------------------

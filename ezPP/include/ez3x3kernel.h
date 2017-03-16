@@ -2,6 +2,14 @@
 #define EZ3X3KERNEL_H
 #include "ezeffect.h"
 
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ez3x3Kernel.h
+/// @brief The class for generating your own 3x3 Kernel effect, using a custom kernel
+/// @author Tom Hoxey
+/// @version 1.0
+/// @date 20/3/17 Initial version
+//----------------------------------------------------------------------------------------------------------------------
+
 class ez3x3Kernel : public ezEffect
 {
 public:

@@ -1,5 +1,8 @@
 #include "ezgreyscale.h"
-
+//----------------------------------------------------------------------------------------------------------------------
+/// @file ezGreyscale.cpp
+/// @brief The implementation of the ezGreyscale class
+//----------------------------------------------------------------------------------------------------------------------
 ezGreyscale::ezGreyscale()
 {
   ezID = 1;
@@ -7,4 +10,4 @@ ezGreyscale::ezGreyscale()
   m_changePixelVals = "float average = (outColour.r * 0.3+outColour.g * 0.6+outColour.b * 0.1)/3.0;\n"
                       "outColour = vec4(average, average, average, 1.0);\n";
 }
-
+//----------------------------------------------------------------------------------------------------------------------

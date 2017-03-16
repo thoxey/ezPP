@@ -180,7 +180,7 @@ int main()
   ezContrast      effect12(true, 100);
   ezContrast      effect13(false, 100);
 
-  myezPPer.ezAddEffect(effect2);
+  myezPPer.ezAddEffect(effect0);
   myezPPer.ezCompileEffects();
 
   while(!quit)
@@ -209,22 +209,22 @@ int main()
                   {
                   // if it's the escape key quit
                   case SDLK_ESCAPE :  quit = true; break;
-                  case SDLK_g :     myezPPer.ezAddEffect(effect1); myezPPer.ezCompileEffects(); break;
-                  case SDLK_n :     myezPPer.ezAddEffect(effect2); myezPPer.ezCompileEffects(); break;
-                  case SDLK_e :     myezPPer.ezAddEffect(effect3); myezPPer.ezCompileEffects(); break;
-                  case SDLK_b :     myezPPer.ezAddEffect(effect4); myezPPer.ezCompileEffects(); break;
-                  case SDLK_m :     myezPPer.ezAddEffect(effect5); myezPPer.ezCompileEffects(); break;
-                  case SDLK_s :     myezPPer.ezAddEffect(effect6); myezPPer.ezCompileEffects(); break;
-                  case SDLK_1 :     myezPPer.ezAddEffect(effect7); myezPPer.ezCompileEffects(); break;
-                  case SDLK_2 :     myezPPer.ezAddEffect(effect8); myezPPer.ezCompileEffects(); break;
-                  case SDLK_3 :     myezPPer.ezAddEffect(effect9); myezPPer.ezCompileEffects(); break;
-                  case SDLK_UP :    myezPPer.ezAddEffect(effect10); myezPPer.ezCompileEffects(); break;
-                  case SDLK_DOWN :  myezPPer.ezAddEffect(effect11); myezPPer.ezCompileEffects(); break;
-                  case SDLK_RIGHT : myezPPer.ezAddEffect(effect12); myezPPer.ezCompileEffects();break;
-                  case SDLK_LEFT :  myezPPer.ezAddEffect(effect13); myezPPer.ezCompileEffects();break;
-                  case SDLK_c :     myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
-                  case SDLK_RETURN : std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
-                  default : break;
+                  case SDLK_g      :     myezPPer.ezAddEffect(effect1); myezPPer.ezCompileEffects(); break;
+                  case SDLK_n      :     myezPPer.ezAddEffect(effect2); myezPPer.ezCompileEffects(); break;
+                  case SDLK_e      :     myezPPer.ezAddEffect(effect3); myezPPer.ezCompileEffects(); break;
+                  case SDLK_b      :     myezPPer.ezAddEffect(effect4); myezPPer.ezCompileEffects(); break;
+                  case SDLK_m      :     myezPPer.ezAddEffect(effect5); myezPPer.ezCompileEffects(); break;
+                  case SDLK_s      :     myezPPer.ezAddEffect(effect6); myezPPer.ezCompileEffects(); break;
+                  case SDLK_1      :     myezPPer.ezAddEffect(effect7); myezPPer.ezCompileEffects(); break;
+                  case SDLK_2      :     myezPPer.ezAddEffect(effect8); myezPPer.ezCompileEffects(); break;
+                  case SDLK_3      :     myezPPer.ezAddEffect(effect9); myezPPer.ezCompileEffects(); break;
+                  case SDLK_UP     :     myezPPer.ezAddEffect(effect10); myezPPer.ezCompileEffects(); break;
+                  case SDLK_DOWN   :     myezPPer.ezAddEffect(effect11); myezPPer.ezCompileEffects(); break;
+                  case SDLK_RIGHT  :     myezPPer.ezAddEffect(effect12); myezPPer.ezCompileEffects();break;
+                  case SDLK_LEFT   :     myezPPer.ezAddEffect(effect13); myezPPer.ezCompileEffects();break;
+                  case SDLK_c      :     myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
+                  case SDLK_RETURN :     std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
+                  default          :     break;
                   } // end of key process
               } // end of keydown
             default : break;
