@@ -180,7 +180,8 @@ int main()
   ezContrast      effect12(true, 100);
   ezContrast      effect13(false, 100);
 
-  myezPPer.ezAddEffect(effect3);
+//  myezPPer.ezAddEffect(effect3);
+//  myezPPer.ezAddEffect(effect2);
   myezPPer.ezCompileEffects();
 
 
@@ -223,7 +224,7 @@ int main()
                   case SDLK_DOWN   :     myezPPer.ezAddEffect(effect11); myezPPer.ezCompileEffects(); break;
                   case SDLK_RIGHT  :     myezPPer.ezAddEffect(effect12); myezPPer.ezCompileEffects();break;
                   case SDLK_LEFT   :     myezPPer.ezAddEffect(effect13); myezPPer.ezCompileEffects();break;
-                  case SDLK_c      :     myezPPer.ezCleanUp(); myezPPer.ezAddEffect(effect0); myezPPer.ezCompileEffects();break;
+                  case SDLK_c      :     myezPPer.ezCleanUp();break;
                   case SDLK_RETURN :     std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
                   default          :     break;
                   } // end of key process

@@ -143,8 +143,8 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
   //Define its properties
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   //Attach it to our frame buffer
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
   // Create first framebuffer's Renderbuffer Object to hold depth and stencil buffers
@@ -354,47 +354,44 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
   glBindVertexArray(quadVAO);
 
 
-  //Bool used to swap the texture for pushing to the screen
-  GLuint lastTex;
-
 //  Bool used to swap between buffers
   bool pingPong = false;
+
 
   //Swap between the two FBOs using the last ones texture
   for(const auto &i : m_activeShaders)
     {
         if(pingPong)
         {
-          //Bind FB1 and bind tex2, and then push them to the shader and draw
-          glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
-          glUseProgram(i);
-          glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
+            //Bind FB2 and bind tex1, and then push them to the shader and draw
+            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
+            glUseProgram(i);
+            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
 
-          //Cause swap
-          lastTex = m_textureColorbuffer1;
-          pingPong = false;
+            //Cause swap
+            pingPong = true;
         }
-      else
+        else
         {
-          //Bind FB2 and bind tex1, and then push them to the shader and draw
-          glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
-          glUseProgram(i);
-          glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
+            //Bind FB1 and bind tex2, and then push them to the shader and draw
+            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
+            glUseProgram(i);
+            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
 
-          //Cause swap
-          lastTex = m_textureColorbuffer2;
-          pingPong = true;
-        }
+            //Cause swap
+            pingPong = false;
+          }
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer1,0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer2,0);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
     }
+
 
 //  //Bind our screen texture
 //  glUseProgram(ezShaderProgram);
 //  glBindTexture(GL_TEXTURE_2D, lastTex);
 //  glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
-
-
-
-
 
   //Bind to the default framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -406,8 +403,10 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_STENCIL_TEST);
 
+
   //Draw to screen
   glDrawArrays(GL_TRIANGLES, 0, 6);
+
 
   //Rebind the VAO that was bound on entering, leaving things as they were found
   glBindVertexArray(CurrVAO);
@@ -436,11 +435,11 @@ void ezPostProcessor::ezCleanUp()
 //  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindVertexArray(0);
+  m_activeShaders.push_back(ezShaderProgram);
 }
 //----------------------------------------------------------------------------------------------------------------------
 std::string ezPostProcessor::returnEzFrag()

@@ -1,0 +1,5 @@
+Milliseconds per frame: 18.744
+event_index,call_type,call_type_index,render_call_number,gpu_time_ms
+5,glDrawArrays,0,0,0.021
+19,glClear,0,1,0.011
+22,glDrawArrays,1,2,0.062
