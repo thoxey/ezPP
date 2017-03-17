@@ -1,4 +1,5 @@
 #include "ezpostprocessor.h"
+#include <algorithm>
 //----------------------------------------------------------------------------------------------------------------------
 /// @file ezPostProcessor.cpp
 /// @brief The implementation of the ezPostProcessor class
@@ -218,6 +219,9 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glDeleteShader(fragShader);
 
   m_inited = true;
+
+
+  m_activeShaders.push_back(ezShaderProgram);
 }
 //----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezResize(int _screenWidth, int _screenHeight)
@@ -244,7 +248,6 @@ void ezPostProcessor::ezCompileEffects()
   //This takes the texture and carries out the operations on it defined in m_effectMasterVector
   std::string compilingFragShader = "";
   m_effectSource.clear();
-  m_activeShaders.clear();
 
   //For each effect in the list make a shader and push the program to a vector to use later
   for(const auto &i : m_effectMasterVector)
@@ -309,8 +312,7 @@ void ezPostProcessor::ezCapture()
     }
   if(m_effectMasterVector.size() == 0)
     {
-      std::cerr<<"No effects present, add an ezNoEffect if you want no effects\n";
-      return;
+//      std::cerr<<"No effects present, add an ezNoEffect if you want no effects\n";
     }
   //////////////////////////////////////////SAFETY CHECKS
 
@@ -359,19 +361,9 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 
 
   //Swap between the two FBOs using the last ones texture
-  for(const auto &i : m_activeShaders)
+    for(const auto &i : m_activeShaders)
     {
         if(pingPong)
-        {
-            //Bind FB2 and bind tex1, and then push them to the shader and draw
-            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
-            glUseProgram(i);
-            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
-
-            //Cause swap
-            pingPong = true;
-        }
-        else
         {
             //Bind FB1 and bind tex2, and then push them to the shader and draw
             glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
@@ -380,7 +372,17 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 
             //Cause swap
             pingPong = false;
-          }
+        }
+        else
+        {            
+            //Bind FB2 and bind tex1, and then push them to the shader and draw
+            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
+            glUseProgram(i);
+            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
+
+            //Cause swap
+            pingPong = true;
+        }
 
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer1,0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer2,0);
@@ -419,13 +421,18 @@ void ezPostProcessor::ezCleanUp()
   //An alternative to the destructor in case you wanted to turn off the effects and clean the buffers
   //But keep the post processor around to use later
 
+  if (m_activeShaders.size() == 1)
+  {
+    std::cout<<"Cannot delete elements from array." <<std::endl;
+    return;
+  }
+
   m_ids.clear();
   m_effectMasterVector.clear();
   m_effectSource.clear();
   m_shaders.clear();
-  for(auto &i : m_activeShaders)
-    glDeleteProgram(i);
-  m_activeShaders.clear();
+
+  m_activeShaders.erase(std::remove_if(m_activeShaders.begin(),m_activeShaders.end(),[this](const GLuint &itr){ return (itr != this->ezShaderProgram)?glDeleteProgram(itr),true:false;} ));
 
 //  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
 //  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
@@ -435,11 +442,10 @@ void ezPostProcessor::ezCleanUp()
 //  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  glBindVertexArray(0);
-  m_activeShaders.push_back(ezShaderProgram);
+//  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+//  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//  glBindVertexArray(0);
 }
 //----------------------------------------------------------------------------------------------------------------------
 std::string ezPostProcessor::returnEzFrag()
