@@ -180,8 +180,8 @@ int main()
   ezContrast      effect12(true, 100);
   ezContrast      effect13(false, 100);
 
-//  myezPPer.ezAddEffect(effect3);
-//  myezPPer.ezAddEffect(effect2);
+  myezPPer.ezAddEffect(effect3);
+  myezPPer.ezAddEffect(effect2);
   myezPPer.ezCompileEffects();
 
 

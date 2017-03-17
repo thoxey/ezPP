@@ -369,6 +369,7 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
             glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
             glUseProgram(i);
             glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer1,0);
 
             //Cause swap
             pingPong = false;
@@ -379,21 +380,14 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
             glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
             glUseProgram(i);
             glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer2,0);
 
             //Cause swap
             pingPong = true;
         }
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer1,0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer2,0);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
     }
 
-
-//  //Bind our screen texture
-//  glUseProgram(ezShaderProgram);
-//  glBindTexture(GL_TEXTURE_2D, lastTex);
-//  glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
 
   //Bind to the default framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
@@ -442,9 +436,9 @@ void ezPostProcessor::ezCleanUp()
 //  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 //  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-//  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-//  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
 //  glBindVertexArray(0);
 }
 //----------------------------------------------------------------------------------------------------------------------
