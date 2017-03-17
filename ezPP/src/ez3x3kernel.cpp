@@ -8,7 +8,8 @@ ez3x3Kernel::ez3x3Kernel(std::string kernel, int _id)
     ezID = 100+_id;
     m_isComplex = true;
     //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
-    m_calcPixelVals ="kernel = float[](\n";
+    m_calcPixelVals = "//ez3x3Kernel \n";
+    m_calcPixelVals +="kernel = float[](\n";
     m_calcPixelVals.append(kernel);
     m_calcPixelVals.append(R"calcPixelVals(
                            );

@@ -10,6 +10,7 @@ ezEmboss::ezEmboss()
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   m_changePixelVals =
       R"changePixelVals(
+      //ezEmboss
       kernel = float[](
       -2.0, -1.0,  0.0,
       -1.0,  1.0,  1.0,

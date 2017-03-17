@@ -10,6 +10,7 @@ ezSharpness::ezSharpness()
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   m_changePixelVals =
       R"changePixelVals(
+      //ezSharpness
       kernel = float[](
       -1.0, -1.0, -1.0,
       -1.0,  9.0, -1.0,

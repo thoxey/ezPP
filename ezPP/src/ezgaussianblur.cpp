@@ -10,6 +10,7 @@ ezGaussianBlur::ezGaussianBlur()
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   m_changePixelVals =
       R"changePixelVals(
+      //ezGaussianBlur
       kernel = float[](
       0.0625, 0.125, 0.0625,
       0.125,  0.25,  0.125,

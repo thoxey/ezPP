@@ -3,22 +3,17 @@
 /// @file ezEffect.cpp
 /// @brief The implementation of the ezEffect class
 //----------------------------------------------------------------------------------------------------------------------
-ezEffect::ezEffect()
-{
-
-}
-//----------------------------------------------------------------------------------------------------------------------
-bool ezEffect::getIsComplex()
+const bool &ezEffect::getIsComplex() const noexcept
 {
   return m_isComplex;
 }
 //----------------------------------------------------------------------------------------------------------------------
-std::string ezEffect::getPixelValChange()
+const std::string &ezEffect::getPixelValChange() const noexcept
 {
   return m_changePixelVals;
 }
 //----------------------------------------------------------------------------------------------------------------------
-std::string ezEffect::getPixelCalc()
+const std::string &ezEffect::getPixelCalc() const noexcept
 {
   return m_calcPixelVals;
 }

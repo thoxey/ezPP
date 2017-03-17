@@ -16,15 +16,18 @@ ezBrightness::ezBrightness(bool _up, float _increment)
     stream << std::fixed << increment;
     std::string incrStr = stream.str();
 
+    m_calcPixelVals = "//ezBrightness \n";
+
+
     if(_up)
     {
-        m_calcPixelVals = "brightnessIncrement += ";
+        m_calcPixelVals += "brightnessIncrement += ";
         m_calcPixelVals.append(incrStr);
         m_calcPixelVals.append("f;\n");
     }
     else
     {
-        m_calcPixelVals = "brightnessIncrement -= ";
+        m_calcPixelVals += "brightnessIncrement -= ";
         m_calcPixelVals.append(incrStr);
         m_calcPixelVals.append("f;\n");
     }

@@ -10,6 +10,7 @@ ezContrast::ezContrast(bool _up, int _increment)
     std::stringstream stream;
     stream << std::fixed << _increment;
     std::string incrStr = stream.str();
+    m_calcPixelVals = "//ezContrast \n";
     //Functions derived from - http://www.dfstudios.co.uk/articles/programming/image-programming-algorithms/image-processing-algorithms-part-5-contrast-adjustment/
     if(_up)
         m_calcPixelVals += "factor += ";

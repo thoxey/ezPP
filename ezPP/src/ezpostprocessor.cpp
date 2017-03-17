@@ -3,12 +3,90 @@
 /// @file ezPostProcessor.cpp
 /// @brief The implementation of the ezPostProcessor class
 //----------------------------------------------------------------------------------------------------------------------
-ezPostProcessor::ezPostProcessor()
-{
-  //Initialize ezPPer
-  m_inited = false;
-  m_captured = false;
-}
+ezPostProcessor::ezPostProcessor() :  m_effectMasterVector(),
+                                      m_activeShaders(),
+                                      m_ids(),
+                                      m_effectSource(),
+                                      m_shaders(),
+                                      m_inited(false),
+                                      m_compiled(false),
+                                      m_captured(false),
+                                      m_screenWidth(1),
+                                      m_screenHeight(1),
+                                      quadVAO(0),
+                                      quadVBO(0),
+                                      vertShader(0),
+                                      fragShader(0),
+                                      ezShaderProgram(0),
+                                      m_textureColorbuffer1(0),
+                                      m_textureColorbuffer2(0),
+                                      m_activeTexture(0),
+                                      m_framebuffer1(0),
+                                      m_framebuffer2(0),
+                                      m_activeFramebuffer(0),
+                                      m_DepthStencil1(0),
+                                      m_DepthStencil2(0),
+                                      m_activeDepthStencil(0),
+                                      m_compiledFragShader(""),
+                                      m_compiledVertShader("")
+{;}
+
+const std::string ezPostProcessor::m_VertSource = R"m_VertSource(
+                                                  #version 410 core
+                                                  layout (location = 0) in vec2 position;
+                                                  layout (location = 1) in vec2 texCoords;
+                                                  out vec2 TexCoords;
+                                                  void main()
+                                                  {
+                                                  gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
+                                                  TexCoords = texCoords;
+                                                  }
+                                                  )m_VertSource" ;
+
+const std::string ezPostProcessor::m_FragSource = R"m_FragSource(
+                                                  #version 410 core
+                                                  in vec2 TexCoords;
+                                                  out vec4 color;
+                                                  uniform sampler2D screenTexture;
+
+                                                  //Variables for different effects
+                                                  float offset;
+                                                  float brightnessIncrement = 0.0f;
+                                                  float kernel[9];
+                                                  float factor = 0;
+                                                  float average;
+                                                  vec2 offsets[9];
+                                                  vec3 sampleTex[9];
+                                                  vec3 col;
+
+                                                  float clamp(float toclamp)
+                                                  {
+                                                  if(toclamp > 255.0f)
+                                                  toclamp = 255.0f;
+                                                  else if (toclamp < 0.0f)
+                                                  toclamp = 0.0f;
+                                                  return toclamp / 255.0f;
+                                                  }
+
+                                                  void main()
+                                                  {
+                                                  offset = 0.003;
+                                                  vec4 outColour = texture(screenTexture, TexCoords);
+                                                  offsets = vec2[](
+                                                  vec2(-offset, offset),  // top-left
+                                                  vec2(0.0f,    offset),  // top-center
+                                                  vec2(offset,  offset),  // top-right
+                                                  vec2(-offset, 0.0f),    // center-left
+                                                  vec2(0.0f,    0.0f),    // center-center
+                                                  vec2(offset,  0.0f),    // center-right
+                                                  vec2(-offset, -offset), // bottom-left
+                                                  vec2(0.0f,    -offset), // bottom-center
+                                                  vec2(offset,  -offset)  // bottom-right
+                                                  );
+                                                  )m_FragSource";
+
+const std::string ezPostProcessor::m_FragSourceEnd = "color = outColour;\n}";
+
 //----------------------------------------------------------------------------------------------------------------------
 ezPostProcessor::~ezPostProcessor()
 {
@@ -33,11 +111,11 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   {// Positions   // TexCoords
    -1.0f,  1.0f,  0.0f, 1.0f,
    -1.0f, -1.0f,  0.0f, 0.0f,
-   1.0f, -1.0f,  1.0f, 0.0f,
+    1.0f, -1.0f,  1.0f, 0.0f,
 
    -1.0f,  1.0f,  0.0f, 1.0f,
-   1.0f, -1.0f,  1.0f, 0.0f,
-   1.0f,  1.0f,  1.0f, 1.0f};
+    1.0f,  1.0f,  1.0f, 1.0f,
+    1.0f, -1.0f,  1.0f, 0.0f};
 #ifndef __APPLE__
   glewExperimental = GL_TRUE;
   GLenum GlewError = glewInit();
@@ -65,14 +143,14 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
   //Define its properties
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   //Attach it to our frame buffer
   glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
   // Create first framebuffer's Renderbuffer Object to hold depth and stencil buffers
   glGenRenderbuffers(1, &m_DepthStencil1);
-  glBindRenderbuffer(GL_RENDERBUFFER, m_DepthStencil1);
-  glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
+  glBindRenderbuffer(GL_FRAMEBUFFER, m_DepthStencil1);
+  glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
   glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil1);
   //---------------------------------------------------------------------------------------------------------
 
@@ -129,7 +207,7 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
   const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
   glShaderSource(fragShader, 1, &fragSource, NULL);
   glCompileShader(fragShader);
-  if(debugShader(fragShader))
+  if(debugShader(fragShader));
     std::cout<<"Frag Shader Initial Load OK \n";
 
   ezShaderProgram = glCreateProgram();
@@ -169,7 +247,7 @@ void ezPostProcessor::ezCompileEffects()
   m_activeShaders.clear();
 
   //For each effect in the list make a shader and push the program to a vector to use later
-  for(auto i : m_effectMasterVector)
+  for(const auto &i : m_effectMasterVector)
     {
       //Concatinate our shader
       compilingFragShader.append(m_FragSource);
@@ -186,7 +264,7 @@ void ezPostProcessor::ezCompileEffects()
 
       //Create compile and check our frag shader
       GLuint newFragShader = glCreateShader(GL_FRAGMENT_SHADER);
-      const GLchar * fragSource = (GLchar *)m_compiledFragShader.c_str();
+      const GLchar * const fragSource = (GLchar *)compilingFragShader.c_str();
       glShaderSource(newFragShader, 1, &fragSource, NULL);
       glCompileShader(newFragShader);
       if(debugShader(newFragShader))
@@ -205,6 +283,7 @@ void ezPostProcessor::ezCompileEffects()
 
       //Push back to our shader vector to use it later and then res
       m_activeShaders.push_back(newEzShaderProgram);
+      compilingFragShader = "";
     }
   //Set this step as true so we can continue
   m_compiled = true;
@@ -238,10 +317,7 @@ void ezPostProcessor::ezCapture()
   //Redirect to my framebuffer
   //This seems lacking??
   glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
   glViewport(0,0,m_screenWidth,m_screenHeight);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_STENCIL_TEST);
 
   //Set stage as true so we can continue
   m_captured = true;
@@ -250,6 +326,10 @@ void ezPostProcessor::ezCapture()
 //----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezRender(GLuint frameBuffer)
 {
+  //Turn off the depth and stencil test
+  glDisable(GL_DEPTH_TEST);
+  glDisable(GL_STENCIL_TEST);
+
   //////////////////////////////////////////SAFETY CHECKS
   GLint CurrVAO;//This is used to rebind the VAO that was bound on entering the function
   glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &CurrVAO);
@@ -273,30 +353,22 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
   //Bind the Screen Space Quad
   glBindVertexArray(quadVAO);
 
-  //Turn off the depth and stencil test
-  glDisable(GL_DEPTH_TEST);
-  glDisable(GL_STENCIL_TEST);
 
   //Bool used to swap the texture for pushing to the screen
   GLuint lastTex;
 
-  //Bool used to swap between buffers
-  bool pingPong = true;
+//  Bool used to swap between buffers
+  bool pingPong = false;
 
   //Swap between the two FBOs using the last ones texture
-  for(auto i : m_activeShaders)
+  for(const auto &i : m_activeShaders)
     {
-      if(pingPong)
+        if(pingPong)
         {
           //Bind FB1 and bind tex2, and then push them to the shader and draw
           glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
           glUseProgram(i);
           glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
-          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer2, 0);
-          glUniform1i(glGetUniformLocation(i, "screenTexture"), 0);
-          glDrawArrays(GL_TRIANGLES, 0, 6);
-
-          //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
           //Cause swap
           lastTex = m_textureColorbuffer1;
@@ -308,11 +380,6 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
           glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
           glUseProgram(i);
           glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
-          glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
-          glUniform1i(glGetUniformLocation(i, "screenTexture"), 0);
-          glDrawArrays(GL_TRIANGLES, 0, 6);
-
-          //glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
           //Cause swap
           lastTex = m_textureColorbuffer2;
@@ -320,19 +387,24 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
         }
     }
 
-  //Renable the depth test
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_STENCIL_TEST);
+//  //Bind our screen texture
+//  glUseProgram(ezShaderProgram);
+//  glBindTexture(GL_TEXTURE_2D, lastTex);
+//  glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
 
-  //Bind our screen texture
-  glUseProgram(ezShaderProgram);
-  glBindTexture(GL_TEXTURE_2D, lastTex);
-  glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
+
+
+
 
   //Bind to the default framebuffer
   glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+  glClearColor(0.f,0.f,0.f,1.f);
+  glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+  //Renable the depth test
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_STENCIL_TEST);
 
   //Draw to screen
   glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -341,6 +413,7 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
   glBindVertexArray(CurrVAO);
 
 }
+
 //----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezCleanUp()
 {
@@ -351,12 +424,22 @@ void ezPostProcessor::ezCleanUp()
   m_effectMasterVector.clear();
   m_effectSource.clear();
   m_shaders.clear();
-  for(auto i : m_activeShaders)
+  for(auto &i : m_activeShaders)
     glDeleteProgram(i);
   m_activeShaders.clear();
-  glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+//  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
+//  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+//  glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
+//  glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+//  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+
   glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+  glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glBindVertexArray(0);
 }
 //----------------------------------------------------------------------------------------------------------------------
@@ -365,7 +448,7 @@ std::string ezPostProcessor::returnEzFrag()
   return m_compiledFragShader + "\n";
 }
 //----------------------------------------------------------------------------------------------------------------------
-std::vector<ezEffect> ezPostProcessor::getEffectsVector()
+const std::vector<ezEffect> &ezPostProcessor::getEffectsVector() const noexcept
 {
   return m_effectMasterVector;
 }

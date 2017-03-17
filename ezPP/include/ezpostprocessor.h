@@ -36,7 +36,7 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief Returns the effects vector
   //----------------------------------------------------------------------------------------------------------------------
-  std::vector<ezEffect> getEffectsVector();
+  const std::vector<ezEffect> &getEffectsVector() const noexcept;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief Initializes the ezPPer with data from the users GL context
   //----------------------------------------------------------------------------------------------------------------------
@@ -81,8 +81,9 @@ public:
   /// @brief prints any shader compilation errors to cerr
   //----------------------------------------------------------------------------------------------------------------------
   bool debugShader(GLint _shader);
-private:
 
+
+private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief vector of effects on the current scene
   //----------------------------------------------------------------------------------------------------------------------
@@ -134,72 +135,20 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The shader source for the final render
   //----------------------------------------------------------------------------------------------------------------------
-  std::string m_compiledFragShader, m_compiledVertShader = "";
+  std::string m_compiledFragShader, m_compiledVertShader;
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The source for the vertex shader it just passes on the texture coordinates
   //----------------------------------------------------------------------------------------------------------------------
-  std::string m_VertSource =
-      R"m_VertSource(
-      #version 410 core
-      layout (location = 0) in vec2 position;
-      layout (location = 1) in vec2 texCoords;
-      out vec2 TexCoords;
-      void main()
-      {
-      gl_Position = vec4(position.x, position.y, 0.0f, 1.0f);
-      TexCoords = texCoords;
-      }
-      )m_VertSource";
+  static const std::string m_VertSource;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief The start of the fragment shader, it declares common variables and assigns the screen texture to a Vec4
   //----------------------------------------------------------------------------------------------------------------------
-  std::string m_FragSource =
-      R"m_FragSource(
-      #version 410 core
-      in vec2 TexCoords;
-      out vec4 color;
-      uniform sampler2D screenTexture;
-
-      //Variables for different effects
-      float offset;
-      float brightnessIncrement = 0.0f;
-      float kernel[9];
-      float factor = 0;
-      float average;
-      vec2 offsets[9];
-      vec3 sampleTex[9];
-      vec3 col;
-
-      float clamp(float toclamp)
-      {
-      if(toclamp > 255.0f)
-      toclamp = 255.0f;
-      else if (toclamp < 0.0f)
-      toclamp = 0.0f;
-      return toclamp / 255.0f;
-      }
-
-      void main()
-      {
-      offset = 0.003;
-      vec4 outColour = texture(screenTexture, TexCoords);
-      offsets = vec2[](
-      vec2(-offset, offset),  // top-left
-      vec2(0.0f,    offset),  // top-center
-      vec2(offset,  offset),  // top-right
-      vec2(-offset, 0.0f),    // center-left
-      vec2(0.0f,    0.0f),    // center-center
-      vec2(offset,  0.0f),    // center-right
-      vec2(-offset, -offset), // bottom-left
-      vec2(0.0f,    -offset), // bottom-center
-      vec2(offset,  -offset)  // bottom-right
-      );
-      )m_FragSource";
+  static const std::string m_FragSource;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief This is the end of the frag shader, it just pushes the texture as the colour and ends the shader
   //----------------------------------------------------------------------------------------------------------------------
-  std::string m_FragSourceEnd ="color = outColour;\n}";
+  static const std::string m_FragSourceEnd;
   //End Citation
 };
 

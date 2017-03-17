@@ -10,6 +10,7 @@ ezEdgeDetect::ezEdgeDetect()
   //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
   m_changePixelVals =
       R"changePixelVals(
+      //ezEdgeDetect
       kernel = float[](
       -0.125f, -0.125f, -0.125f,
       -0.125f,    1.0f, -0.125f,
