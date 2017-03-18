@@ -149,40 +149,10 @@ int main()
   ezPostProcessor myezPPer;
   myezPPer.ezInit(SCREENSIZE, SCREENSIZE);
 
-  //Some custom Kernels to show the 3x3Kernel class in use
-
-
-  std::string sharpness = "-1.0, -1.0, -1.0,"
-                          "-1.0,  9.0, -1.0,"
-                          "-1.0, -1.0, -1.0";
-
-  std::string emboss =    "-2.0, -1.0,  0.0,"
-                          "-1.0,  1.0,  1.0,"
-                          " 0.0,  1.0,  2.0";
-
-  std::string average =   "-1.5, -1.0,  -0.5,"
-                          "-1.0,  5.0,   0.0,"
-                          "-0.5,  0.0,   0.5";
-
-
-  ezNoEffects     effect0;
-  ezGreyscale     effect1;
-  ezNegative      effect2;
-  ezEdgeDetect    effect3;
-  ezGaussianBlur  effect4;
-  ezEmboss        effect5;
-  ezSharpness     effect6;
-  ez3x3Kernel     effect7(sharpness, 0);
-  ez3x3Kernel     effect8(emboss, 1);
-  ez3x3Kernel     effect9(average, 2);
-  ezBrightness    effect10(true, 0.1f);
-  ezBrightness    effect11(false, 0.1f);
-  ezContrast      effect12(true, 100);
-  ezContrast      effect13(false, 100);
+  //Some custom Kernels to show the 3x3Kernel class in usec
 
 //  myezPPer.ezAddEffect(effect3);
 //  myezPPer.ezAddEffect(effect2);
-  myezPPer.ezCompileEffects();
 
 
   while(!quit)
@@ -211,21 +181,17 @@ int main()
                   {
                   // if it's the escape key quit
                   case SDLK_ESCAPE :  quit = true; break;
-                  case SDLK_g      :     myezPPer.ezAddEffect(effect1); myezPPer.ezCompileEffects(); break;
-                  case SDLK_n      :     myezPPer.ezAddEffect(effect2); myezPPer.ezCompileEffects(); break;
-                  case SDLK_e      :     myezPPer.ezAddEffect(effect3); myezPPer.ezCompileEffects(); break;
-                  case SDLK_b      :     myezPPer.ezAddEffect(effect4); myezPPer.ezCompileEffects(); break;
-                  case SDLK_m      :     myezPPer.ezAddEffect(effect5); myezPPer.ezCompileEffects(); break;
-                  case SDLK_s      :     myezPPer.ezAddEffect(effect6); myezPPer.ezCompileEffects(); break;
-                  case SDLK_1      :     myezPPer.ezAddEffect(effect7); myezPPer.ezCompileEffects(); break;
-                  case SDLK_2      :     myezPPer.ezAddEffect(effect8); myezPPer.ezCompileEffects(); break;
-                  case SDLK_3      :     myezPPer.ezAddEffect(effect9); myezPPer.ezCompileEffects(); break;
-                  case SDLK_UP     :     myezPPer.ezAddEffect(effect10); myezPPer.ezCompileEffects(); break;
-                  case SDLK_DOWN   :     myezPPer.ezAddEffect(effect11); myezPPer.ezCompileEffects(); break;
-                  case SDLK_RIGHT  :     myezPPer.ezAddEffect(effect12); myezPPer.ezCompileEffects();break;
-                  case SDLK_LEFT   :     myezPPer.ezAddEffect(effect13); myezPPer.ezCompileEffects();break;
-                  case SDLK_c      :     myezPPer.ezCleanUp();break;
-                  case SDLK_RETURN :     std::cerr<<myezPPer.returnEzFrag()<<"\n"; break;
+                  case SDLK_g      :     myezPPer.ezAddEffect(new ezGreyscale);         break;
+                  case SDLK_n      :     myezPPer.ezAddEffect(new ezNegative);          break;
+                  case SDLK_e      :     myezPPer.ezAddEffect(new ezEdgeDetect);        break;
+                  case SDLK_b      :     myezPPer.ezAddEffect(new ezGaussianBlur);      break;
+                  case SDLK_m      :     myezPPer.ezAddEffect(new ezEmboss);            break;
+                  case SDLK_s      :     myezPPer.ezAddEffect(new ezSharpness);         break;
+                  case SDLK_UP     :     myezPPer.ezAddEffect(new ezBrightness(0.1f));  break;
+                  case SDLK_DOWN   :     myezPPer.ezAddEffect(new ezBrightness(-0.1f)); break;
+                  case SDLK_RIGHT  :     myezPPer.ezAddEffect(new ezContrast(100));     break;
+                  case SDLK_LEFT   :     myezPPer.ezAddEffect(new ezContrast(-100));    break;
+                  case SDLK_c      :     myezPPer.ezCleanUp();                          break;
                   default          :     break;
                   } // end of key process
               } // end of keydown

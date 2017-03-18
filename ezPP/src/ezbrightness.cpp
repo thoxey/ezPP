@@ -3,35 +3,30 @@
 /// @file ezBrightness.cpp
 /// @brief The implementation of the ezBrightness class
 //----------------------------------------------------------------------------------------------------------------------
-ezBrightness::ezBrightness(bool _up, float _increment)
+ezBrightness::ezBrightness(float _increment)
 {
-    if(_up)
-        ezID = 8;
-    else
-        ezID = 9;
-    m_isComplex = false;
-    float increment = 0.0f+_increment;
 
     std::stringstream stream;
-    stream << std::fixed << increment;
+    stream << std::fixed << _increment;
     std::string incrStr = stream.str();
 
-    m_calcPixelVals = "//ezBrightness \n";
+    m_FragSource  = R"m_FragSource(
+                    #version 410 core
+                    in vec2 TexCoords;
+                    out vec4 color;
+                    uniform sampler2D screenTexture;
+                    float brightnessIncrement =)m_FragSource";
+    m_FragSource += incrStr;
+    m_FragSource +=R"m_FragSource(f;
+                   void main()
+                   {
+                   vec4 outColour = texture(screenTexture, TexCoords);
+                   outColour =vec4(outColour.r+brightnessIncrement,outColour.g+brightnessIncrement,outColour.b+brightnessIncrement,1.0f);
+                   color = outColour;
+                   }
+                   )m_FragSource";
 
-
-    if(_up)
-    {
-        m_calcPixelVals += "brightnessIncrement += ";
-        m_calcPixelVals.append(incrStr);
-        m_calcPixelVals.append("f;\n");
-    }
-    else
-    {
-        m_calcPixelVals += "brightnessIncrement -= ";
-        m_calcPixelVals.append(incrStr);
-        m_calcPixelVals.append("f;\n");
-    }
-    m_changePixelVals = "outColour =vec4(outColour.r+brightnessIncrement,outColour.g+brightnessIncrement,outColour.b+brightnessIncrement,1.0f);\n";
+    ezCompileEffect();
 
 }
 //----------------------------------------------------------------------------------------------------------------------

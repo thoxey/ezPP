@@ -1,1 +1,0 @@
-                    glBindRenderbuffer (target = 0x00008D40)

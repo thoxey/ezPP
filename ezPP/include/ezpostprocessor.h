@@ -36,7 +36,7 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief Returns the effects vector
   //----------------------------------------------------------------------------------------------------------------------
-  const std::vector<ezEffect> &getEffectsVector() const noexcept;
+  const std::vector<ezEffect *> &getEffectsVector() const noexcept;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief Initializes the ezPPer with data from the users GL context
   //----------------------------------------------------------------------------------------------------------------------
@@ -48,7 +48,7 @@ public:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief adds an effect to the master vector to be compiled, will become template function to accept presets in future
   //----------------------------------------------------------------------------------------------------------------------
-  void ezAddEffect(ezEffect _addedEffect);
+  void ezAddEffect(ezEffect *_addedEffect);
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief allows you to make a prest that means you can add a group of effects at once
   //----------------------------------------------------------------------------------------------------------------------
@@ -87,7 +87,7 @@ private:
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief vector of effects on the current scene
   //----------------------------------------------------------------------------------------------------------------------
-  std::vector<ezEffect> m_effectMasterVector;
+  std::vector<ezEffect*> m_effectMasterVector;
   //----------------------------------------------------------------------------------------------------------------------
   /// @brief stores the active shaders
   //----------------------------------------------------------------------------------------------------------------------
@@ -136,20 +136,6 @@ private:
   /// @brief The shader source for the final render
   //----------------------------------------------------------------------------------------------------------------------
   std::string m_compiledFragShader, m_compiledVertShader;
-  //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
-  //----------------------------------------------------------------------------------------------------------------------
-  /// @brief The source for the vertex shader it just passes on the texture coordinates
-  //----------------------------------------------------------------------------------------------------------------------
-  static const std::string m_VertSource;
-  //----------------------------------------------------------------------------------------------------------------------
-  /// @brief The start of the fragment shader, it declares common variables and assigns the screen texture to a Vec4
-  //----------------------------------------------------------------------------------------------------------------------
-  static const std::string m_FragSource;
-  //----------------------------------------------------------------------------------------------------------------------
-  /// @brief This is the end of the frag shader, it just pushes the texture as the colour and ends the shader
-  //----------------------------------------------------------------------------------------------------------------------
-  static const std::string m_FragSourceEnd;
-  //End Citation
 };
 
 #endif // EZPOSTPROCESSOR_H

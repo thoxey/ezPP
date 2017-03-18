@@ -19,7 +19,7 @@ public:
     /// @param _up Whether the effect will increment or decrement, set true to increment
     /// @param _increment The amount to increment by
     //----------------------------------------------------------------------------------------------------------------------
-  ezContrast(bool _up, int _increment);
+  ezContrast(int _increment);
 
 };
 

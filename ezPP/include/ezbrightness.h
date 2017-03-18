@@ -19,7 +19,7 @@ public:
     /// @param _up Whether the effect will increment or decrement, set true to increment
     /// @param _increment The amount to increment by
     //----------------------------------------------------------------------------------------------------------------------
-  ezBrightness(bool _up, float _increment);
+  ezBrightness(float _increment);
 
 };
 #endif // EZBRIGHTNESS_H

@@ -47,3 +47,5 @@ ezPP/.qmake.stash
 demos/ezPP-SDLtextured/ezPPSDLTextured.pro.user
 
 demos/ezPP-SDL/ezPPSDLTest
+
+demos/ezPP-SDL/Makefile

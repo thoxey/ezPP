@@ -3,15 +3,25 @@
 /// @file ez3x3Kernel.cpp
 /// @brief The implementation of the ez3x3Kernel class
 //----------------------------------------------------------------------------------------------------------------------
-ez3x3Kernel::ez3x3Kernel(std::string kernel, int _id)
+ez3x3Kernel::ez3x3Kernel(std::string kernel)
 {
-    ezID = 100+_id;
-    m_isComplex = true;
     //Adapted from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02
-    m_calcPixelVals = "//ez3x3Kernel \n";
-    m_calcPixelVals +="kernel = float[](\n";
-    m_calcPixelVals.append(kernel);
-    m_calcPixelVals.append(R"calcPixelVals(
+    m_FragSource = R"m_FragSource(
+                   #version 410 core
+                   in vec2 TexCoords;
+                   out vec4 color;
+                   uniform sampler2D screenTexture;
+
+                   //Variables for different effects
+                   float offset;
+                   vec2 offsets[9];
+                   vec3 sampleTex[9];
+                   vec3 col;
+                   )m_FragSource";
+    m_FragSource += "//ez3x3Kernel \n";
+    m_FragSource +="kernel = float[](\n";
+    m_FragSource += kernel;
+    m_FragSource.append(R"calcPixelVals(
                            );
                            for(int i = 0; i < 9; i++)
                            {
@@ -21,7 +31,13 @@ ez3x3Kernel::ez3x3Kernel(std::string kernel, int _id)
                            for(int i = 0; i < 9; i++)\n
                            col += sampleTex[i] * kernel[i];
                            )calcPixelVals");
-            m_changePixelVals = "outColour = vec4(col, 1.0);\n";
+    m_FragSource += "outColour = vec4(col, 1.0);\n";
+
+
+
+
     //End Citation
+
+    ezCompileEffect();
 }
 //----------------------------------------------------------------------------------------------------------------------

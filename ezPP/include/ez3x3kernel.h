@@ -18,7 +18,7 @@ public:
   /// @param kernel This allows the user to input a custom kernel
   /// @param _id This prompts the user to add thier own unique id to ensure it doesnt clash with other effects
   //----------------------------------------------------------------------------------------------------------------------
-  ez3x3Kernel(std::string kernel, int _id);
+  ez3x3Kernel(std::string kernel);
 
 };
 
