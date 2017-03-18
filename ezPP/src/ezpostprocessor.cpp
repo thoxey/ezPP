@@ -57,49 +57,26 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     m_screenHeight = _screenHeight;
     m_screenWidth = _screenWidth;
     //-------------------------------------"Adapted code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
-
-
-    //Brace for large setup!
-
-
-    //Create a framebuffer & bind it so that it can recieve a texture
-    //---------------------------------------------------------------------------------------------------------
-    glGenFramebuffers(1, &m_framebuffer[0]);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[0]);
-    //Create said color attachment texture
-    glGenTextures(1, &m_textureColorbuffer[0]);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[0]);
-    //Define its properties
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //Attach it to our frame buffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer[0], 0);
-    // Create first framebuffer's Renderbuffer Object to hold depth and stencil buffers
-    glGenRenderbuffers(1, &m_DepthStencil[0]);
-    glBindRenderbuffer(GL_FRAMEBUFFER, m_DepthStencil[0]);
-    glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil[0]);
-    //---------------------------------------------------------------------------------------------------------
-
-
-    //Do all that again for a second buffer
-    //---------------------------------------------------------------------------------------------------------
-    glGenFramebuffers(1, &m_framebuffer[1]);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[1]);
-    glGenTextures(1, &m_textureColorbuffer[1]);
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[1]);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer[1], 0);
-    glGenRenderbuffers(1, &m_DepthStencil[1]);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_DepthStencil[1]);
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil[1]);
-    //---------------------------------------------------------------------------------------------------------
+    for(int i = 0; i <2; i++)
+    {
+        glGenFramebuffers(1, &m_framebuffer[i]);
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[i]);
+        //Create said color attachment texture
+        glGenTextures(1, &m_textureColorbuffer[i]);
+        glActiveTexture(GL_TEXTURE0+i);
+        glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[i]);
+        //Define its properties
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        //Attach it to our frame buffer
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer[i], 0);
+        // Create first framebuffer's Renderbuffer Object to hold depth and stencil buffers
+        glGenRenderbuffers(1, &m_DepthStencil[i]);
+        glBindRenderbuffer(GL_FRAMEBUFFER, m_DepthStencil[0]);
+        glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil[i]);
+    }
 
     //Unbind everything so it was like this never happened!
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -182,38 +159,27 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
     //Bind the Screen Space Quad
     glBindVertexArray(quadVAO);
 
+    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+
     //  Bool used to swap between buffers
     bool pingPong = false;
-
+    bool first = true;
     //Swap between the two FBOs using the last ones texture
     for(const auto &i : m_effectMasterVector)
     {
-        if(pingPong)
-        {
-            //Bind FB1 and bind tex2, and then push them to the shader and draw
-            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[0]);
-            glUseProgram(i->getShaderProg());
-            //Bind the texture
-            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[0]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[0],0);
-            //Swap
-            pingPong = false;
-        }
-        else
-        {
-            //Bind FB2 and bind tex1, and then push them to the shader and draw
-            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[1]);
-            glUseProgram(i->getShaderProg());
-            //Bind the texture
-            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[1]);
-            glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[1],0);
-            //Swap
-            pingPong = true;
-        }
+        //Bind FB1 and bind tex2, and then push them to the shader and draw
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[pingPong]);
+        glUseProgram(i->getShaderProg());
+        //Bind the texture
+        glBindTexture(GL_TEXTURE_2D, first ? m_textureColorbuffer[1] : m_textureColorbuffer[!pingPong]);  // m_textureColorbuffer[!pingPong]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[pingPong],0);
+        //Swap
         //Uncommenting this line will allow us to stach the effects but causes weird effects
-        //glDrawArrays(GL_TRIANGLES, 0, 6);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        pingPong = !pingPong;
+        if(first)
+            first = false;
     }
-
     //Bind to the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glClearColor(0.f,0.f,0.f,1.f);
