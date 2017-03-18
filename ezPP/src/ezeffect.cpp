@@ -41,8 +41,6 @@ const GLuint &ezEffect::getShaderProg() const noexcept
 //----------------------------------------------------------------------------------------------------------------------
 void ezEffect::ezCompileEffect()
 {
-    std::string compilingFragShader = m_FragSource;
-
     GLuint newvertShader = glCreateShader(GL_VERTEX_SHADER);
     const GLchar * vertSource = (GLchar *)m_VertSource.c_str();
     glShaderSource(newvertShader, 1, &vertSource, NULL);
@@ -51,7 +49,7 @@ void ezEffect::ezCompileEffect()
 
     //Create and compile our frag shader
     GLuint newFragShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const GLchar * const fragSource = (GLchar *)compilingFragShader.c_str();
+    const GLchar * const fragSource = (GLchar *)m_FragSource.c_str();
     glShaderSource(newFragShader, 1, &fragSource, NULL);
     glCompileShader(newFragShader);
     debugShader(newFragShader);

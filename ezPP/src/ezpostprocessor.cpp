@@ -27,24 +27,13 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     //////////////////////////////////////////SAFETY CHECKS
     GLint contextTest;
     glGetIntegerv(GL_MAJOR_VERSION, &contextTest);
-    if(contextTest < 3)
+    if(contextTest < 4)
     {
         std::cerr<<"No Valid Open GL Context Detected\nOr major GL version is below 3";
         return;
     }
     //////////////////////////////////////////SAFETY CHECKS
 
-    //The vertex positions (the 4 corners corners of the screen -1 to 1).
-    //and the texture coordinates (also the four corners of the screen 0 to 1).
-    const GLfloat quadVertices[24] =
-    {// Positions   // TexCoords
-     -1.0f,  1.0f,  0.0f, 1.0f,
-     -1.0f, -1.0f,  0.0f, 0.0f,
-     1.0f, -1.0f,  1.0f, 0.0f,
-
-     -1.0f,  1.0f,  0.0f, 1.0f,
-     1.0f,  1.0f,  1.0f, 1.0f,
-     1.0f, -1.0f,  1.0f, 0.0f};
 #ifndef __APPLE__
     glewExperimental = GL_TRUE;
     GLenum GlewError = glewInit();
@@ -54,9 +43,12 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
         std::cerr<<"Glew Error: "<<glewGetErrorString(GlewError)<<"\n";
     }
 #endif
+    //Set the screensize
     m_screenHeight = _screenHeight;
     m_screenWidth = _screenWidth;
-    //-------------------------------------"Adapted code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
+    //The vertex positions (the 4 corners corners of the screen -1 to 1).
+    //and the texture coordinates (also the four corners of the screen 0 to 1).
+    //Generate two frame buffers
     for(int i = 0; i <2; i++)
     {
         glGenFramebuffers(1, &m_framebuffer[i]);
@@ -77,11 +69,18 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
         glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
         glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil[i]);
     }
-
-    //Unbind everything so it was like this never happened!
     glBindTexture(GL_TEXTURE_2D, 0);
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    //-------------------------------------"Adapted code from https://learnopengl.com/#!Advanced-OpenGL/Framebuffers Accesed 17/02"
+    const GLfloat quadVertices[24] =
+    {// Positions   // TexCoords
+     -1.0f,  1.0f,  0.0f, 1.0f,
+     -1.0f, -1.0f,  0.0f, 0.0f,
+     1.0f, -1.0f,  1.0f, 0.0f,
 
+     -1.0f,  1.0f,  0.0f, 1.0f,
+     1.0f,  1.0f,  1.0f, 1.0f,
+     1.0f, -1.0f,  1.0f, 0.0f};
     // Setup screen VAO
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
@@ -173,9 +172,9 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
         //Bind the texture
         glBindTexture(GL_TEXTURE_2D, first ? m_textureColorbuffer[1] : m_textureColorbuffer[!pingPong]);  // m_textureColorbuffer[!pingPong]);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[pingPong],0);
-        //Swap
-        //Uncommenting this line will allow us to stach the effects but causes weird effects
+        //Uncommenting this line will allow us to stack the effects but causes weird effects
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        //Swap
         pingPong = !pingPong;
         if(first)
             first = false;
