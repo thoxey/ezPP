@@ -149,12 +149,6 @@ int main()
   ezPostProcessor myezPPer;
   myezPPer.ezInit(SCREENSIZE, SCREENSIZE);
 
-  //Some custom Kernels to show the 3x3Kernel class in usec
-
-//  myezPPer.ezAddEffect(effect3);
-//  myezPPer.ezAddEffect(effect2);
-
-
   while(!quit)
     {
 
@@ -206,14 +200,10 @@ int main()
       glUseProgram(shaderProgram);
       glDrawArrays(GL_TRIANGLES, 0, 3);
       glBindVertexArray(0);
-      //Now we draw to the scren using our texture
-      //Return to the default frame buffer and clear color buffer
+      //Now put our post processed image to screen
       myezPPer.ezRender();
-      glBindVertexArray(0);
       SDL_GL_SwapWindow(window);
     }
-  //Tempory clean up until ezCleanUp is implemented
-  //glDeleteFramebuffers(1, &framebuffer);
   // now tidy up and exit SDL
   SDL_Quit();
   // whilst this code will never execute under windows we need to have a return from

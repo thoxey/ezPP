@@ -6,36 +6,20 @@
 //----------------------------------------------------------------------------------------------------------------------
 ezPostProcessor::ezPostProcessor() :
     m_effectMasterVector(),
-    m_activeShaders(),
-    m_ids(),
-    m_effectSource(),
-    m_shaders(),
     m_inited(false),
-    m_compiled(false),
     m_captured(false),
     m_screenWidth(1),
     m_screenHeight(1),
     quadVAO(0),
     quadVBO(0),
-    vertShader(0),
-    fragShader(0),
-    ezShaderProgram(0),
-    m_textureColorbuffer1(0),
-    m_textureColorbuffer2(0),
-    m_activeTexture(0),
-    m_framebuffer1(0),
-    m_framebuffer2(0),
-    m_activeFramebuffer(0),
-    m_DepthStencil1(0),
-    m_DepthStencil2(0),
-    m_activeDepthStencil(0),
-    m_compiledFragShader(""),
-    m_compiledVertShader("")
+    m_framebuffer{0, 0},
+    m_textureColorbuffer{0,0},
+    m_DepthStencil{0, 0}
 {;}
 //----------------------------------------------------------------------------------------------------------------------
 ezPostProcessor::~ezPostProcessor()
 {
-    //Clear buffer etc.
+    m_effectMasterVector.empty();
 }
 //----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
@@ -80,41 +64,41 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
 
     //Create a framebuffer & bind it so that it can recieve a texture
     //---------------------------------------------------------------------------------------------------------
-    glGenFramebuffers(1, &m_framebuffer1);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
+    glGenFramebuffers(1, &m_framebuffer[0]);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[0]);
     //Create said color attachment texture
-    glGenTextures(1, &m_textureColorbuffer1);
+    glGenTextures(1, &m_textureColorbuffer[0]);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
+    glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[0]);
     //Define its properties
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     //Attach it to our frame buffer
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer1, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer[0], 0);
     // Create first framebuffer's Renderbuffer Object to hold depth and stencil buffers
-    glGenRenderbuffers(1, &m_DepthStencil1);
-    glBindRenderbuffer(GL_FRAMEBUFFER, m_DepthStencil1);
+    glGenRenderbuffers(1, &m_DepthStencil[0]);
+    glBindRenderbuffer(GL_FRAMEBUFFER, m_DepthStencil[0]);
     glRenderbufferStorage(GL_FRAMEBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil1);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil[0]);
     //---------------------------------------------------------------------------------------------------------
 
 
     //Do all that again for a second buffer
     //---------------------------------------------------------------------------------------------------------
-    glGenFramebuffers(1, &m_framebuffer2);
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
-    glGenTextures(1, &m_textureColorbuffer2);
+    glGenFramebuffers(1, &m_framebuffer[1]);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[1]);
+    glGenTextures(1, &m_textureColorbuffer[1]);
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
+    glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer2, 0);
-    glGenRenderbuffers(1, &m_DepthStencil2);
-    glBindRenderbuffer(GL_RENDERBUFFER, m_DepthStencil2);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer[1], 0);
+    glGenRenderbuffers(1, &m_DepthStencil[1]);
+    glBindRenderbuffer(GL_RENDERBUFFER, m_DepthStencil[1]);
     glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_screenWidth, m_screenHeight);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil2);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, m_DepthStencil[1]);
     //---------------------------------------------------------------------------------------------------------
 
     //Unbind everything so it was like this never happened!
@@ -138,8 +122,10 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     glBindVertexArray(0);
     //-------------------------------------end citation
 
+    //Add a blank effect to the master vector to allow the user to see an output
     m_effectMasterVector.push_back(new ezEffect);
 
+    //Confirm we reached the end of this stage and allow us to continue
     m_inited = true;
 
 
@@ -167,8 +153,7 @@ void ezPostProcessor::ezCapture()
     //////////////////////////////////////////SAFETY CHECKS
 
     //Redirect to my framebuffer
-    //This seems lacking??
-    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
+    glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[0]);
     glViewport(0,0,m_screenWidth,m_screenHeight);
 
     //Set stage as true so we can continue
@@ -178,13 +163,7 @@ void ezPostProcessor::ezCapture()
 //----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezRender(GLuint frameBuffer)
 {
-    //Turn off the depth and stencil test
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_STENCIL_TEST);
-
     //////////////////////////////////////////SAFETY CHECKS
-    GLint CurrVAO;//This is used to rebind the VAO that was bound on entering the function
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &CurrVAO);
     if(!m_inited)
     {
         std::cerr<<"ezRender called before ezInit \n";
@@ -196,14 +175,15 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
         return;
     }
     //////////////////////////////////////////SAFETY CHECKS
+    //Turn off the depth and stencil test
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_STENCIL_TEST);
 
     //Bind the Screen Space Quad
     glBindVertexArray(quadVAO);
 
-
     //  Bool used to swap between buffers
     bool pingPong = false;
-
 
     //Swap between the two FBOs using the last ones texture
     for(const auto &i : m_effectMasterVector)
@@ -211,52 +191,40 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
         if(pingPong)
         {
             //Bind FB1 and bind tex2, and then push them to the shader and draw
-            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer1);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[0]);
             glUseProgram(i->getShaderProg());
-            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer2);
-
-            //Cause swap
+            //Bind the texture
+            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[0]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[0],0);
+            //Swap
             pingPong = false;
         }
         else
         {
             //Bind FB2 and bind tex1, and then push them to the shader and draw
-            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer2);
+            glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[1]);
             glUseProgram(i->getShaderProg());
-            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer1);
-
-            //Cause swap
+            //Bind the texture
+            glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[1]);
+            glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[1],0);
+            //Swap
             pingPong = true;
         }
-
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer1,0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer2,0);
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+        //Uncommenting this line will allow us to stach the effects but causes weird effects
+        //glDrawArrays(GL_TRIANGLES, 0, 6);
     }
-
-
-    //  //Bind our screen texture
-    //  glUseProgram(ezShaderProgram);
-    //  glBindTexture(GL_TEXTURE_2D, lastTex);
-    //  glUniform1i(glGetUniformLocation(ezShaderProgram, "screenTexture"), 0);
 
     //Bind to the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
-
     glClearColor(0.f,0.f,0.f,1.f);
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-    //Renable the depth test
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_STENCIL_TEST);
-
 
     //Draw to screen
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-
-    //Rebind the VAO that was bound on entering, leaving things as they were found
-    glBindVertexArray(CurrVAO);
+    //Renable the depth test
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_STENCIL_TEST);
 
 }
 
@@ -264,7 +232,6 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 void ezPostProcessor::ezCleanUp()
 {
     //Clears all but the default buffer
-
     for(auto i : m_effectMasterVector)
     {
         if (m_effectMasterVector.size() == 1)
@@ -276,14 +243,3 @@ void ezPostProcessor::ezCleanUp()
 
 
 }
-//----------------------------------------------------------------------------------------------------------------------
-std::string ezPostProcessor::returnEzFrag()
-{
-    return m_compiledFragShader + "\n";
-}
-//----------------------------------------------------------------------------------------------------------------------
-const std::vector<ezEffect *> &ezPostProcessor::getEffectsVector() const noexcept
-{
-    return m_effectMasterVector;
-}
-//----------------------------------------------------------------------------------------------------------------------
