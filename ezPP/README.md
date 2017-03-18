@@ -44,6 +44,15 @@ bind screenFramebuffer
 draw to screen
 ```
 This is a standardised routine that uses the previous effect as the input for the next effect. This allows the 'stacking' of effects to create new effects.    
+## ezAdd ##
+This simply adds an effect to our list to be processed when ezRender is called. Doing this also triggers the ezCompileEffect from the constructor of the effect. This creates an gl shader program that we can use in the rendering stage.     
+Doing it this way helps to clear out code from the ezPostProcessor class, making the liobrary easier to read. Also I think it makes sense for the effect class to generate a usable effect (shader), such that the user only need to call init->add->capture->render. Since the list of effects stores pointers we can just use ezAdd as below rather than having to create an effect first.
+```
+ezAdd(new ezEffect);
+```
+
+----------
+## Other Info and Thoughts ##
 The effects can be added in realtime, or before you run, making this a flexible library for use in realtime projects. For example if you wanted to blur the image when a character got hit in a game you can apply the blur for a few frames and then clear it.    
 The library is suited for easy expansion since you only need to add a new class and write in your frag shader in the constructor.    
 If your desired new effect needs to take values that determine the output of the shader then look at the ezBrigtness class for how this can be achieved using string stream. In theory anything can be insterted into the shader, for example the ez3x3Kernel class shows insterting a string into the class.
