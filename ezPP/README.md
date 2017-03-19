@@ -2,6 +2,7 @@ ezPP
 ----------
 The basic concept of the library is to make the process of using OpenGL frame buffers to create post processing effects "ez".   
 To do this the library obscures all of the binding, initialising etc. from the user and allows them to use the simpler to understand command chain illustrated [here](http://tomhoxey.co.uk/wp-content/uploads/2017/03/Screen-Shot-2017-03-18-at-00.13.57.png).   
+
 Essentially the user can add as many effects as they want to using ezAdd and then each effect class generates a compiled gl shader program that is added to a vector in an ezPostProcessor. Then before the user runs thier draw code they must call ezCapture, run thier draw code as usual, then call ezRender.
 For example the following code with turn you image to greyscale:
 ```
@@ -28,7 +29,7 @@ Next we generate two [FBOs](https://www.khronos.org/opengl/wiki/Framebuffer_Obje
 Next we need somewhere to draw these textures, and that place is our screen space quad. Thus we declare the verticies for it bind them into a buffer and a Vertex Array, we will need these later for our draw calls.   
 The last two things we do in this function is push back a blank effect to the effect list so we get an output on the screen and then we set m_inited to true to allow the next stage to begin.
 ## ezCapture ##
-This is a small function that simply binds to the first of our two custom FBOs then sets the size of the texture, this step is neccesary to ensure that the user is draws thier geometry to our custom buffer.
+This is a small function that simply binds to the first of our two custom FBOs then sets the size of the texture, this step is neccesary to ensure that the user is draws thier geometry to our custom buffer. The other essential task this does is clear our buffers before we start rendering to ensure that we dont have any information leaking from previous frames.    
 ## ezRender ##
 The backbone of the library is the idea of '**double buffering**' or '**ping ponging'** (The term I prefer and will use). This entails initialising two buffers and using the output of one into the other in a loop and finally pushing to the screen.    
 This is a more efficient way to do this since it will only ever generate and use 2 Framebuffers saving on costly operations such as glGenFramebuffers and glGenTextures since there are only called once at launch.    
@@ -44,9 +45,10 @@ bind screenFramebuffer
 draw to screen
 ```
 This is a standardised routine that uses the previous effect as the input for the next effect. This allows the 'stacking' of effects to create new effects.    
+If this is difficult to understand, imagine it like a game of [consequences](https://en.wikipedia.org/wiki/Consequences_(game)) where each buffer draws his part depending on the output of the buffer before, but without knowlege of the whole chain.
 ## ezAdd ##
 This simply adds an effect to our list to be processed when ezRender is called. Doing this also triggers the ezCompileEffect from the constructor of the effect. This creates an gl shader program that we can use in the rendering stage.     
-Doing it this way helps to clear out code from the ezPostProcessor class, making the liobrary easier to read. Also I think it makes sense for the effect class to generate a usable effect (shader), such that the user only need to call init->add->capture->render. Since the list of effects stores pointers we can just use ezAdd as below rather than having to create an effect first.
+Doing it this way helps to clear out code from the ezPostProcessor class, making the library easier to read. Also I think it makes sense for the effect class to generate a usable effect (shader), such that the user only need to call init->add->capture->render. Since the list of effects stores pointers we can just use ezAdd as below rather than having to create an effect first.
 ```
 ezAdd(new ezEffect);
 ```
