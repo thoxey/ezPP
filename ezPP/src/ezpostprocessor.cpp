@@ -172,7 +172,6 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 
     //  Bool used to swap between buffers
     bool pingPong = true;
-    bool first = true;
     //Swap between the two FBOs using the last ones texture
     for(const auto &i : m_effectMasterVector)
     {
@@ -186,8 +185,7 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
         glDrawArrays(GL_TRIANGLES, 0, 6);
         //Swap
         pingPong = !pingPong;
-        if(first)
-            first = false;
+
     }
 
     //Bind to the default framebuffer

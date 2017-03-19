@@ -1,16 +1,12 @@
 QMAKE_DEFAULT_INCDIRS = \
-    /usr/include/c++/4.8.5 \
-    /usr/include/c++/4.8.5/x86_64-redhat-linux \
-    /usr/include/c++/4.8.5/backward \
-    /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include \
-    /usr/local/include \
-    /usr/include
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1 \
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/8.0.0/include \
+    /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include \
+    /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/usr/include \
+    "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk/System/Library/Frameworks (framework directory)"
 QMAKE_DEFAULT_LIBDIRS = \
-    /usr/lib/gcc/x86_64-redhat-linux/4.8.5 \
-    /usr/lib64 \
-    /lib64 \
-    /usr/lib \
-    /lib
+    /lib \
+    /usr/lib
 QMAKE_XCODE_DEVELOPER_PATH = /Applications/Xcode.app/Contents/Developer
 QMAKE_XCODE_VERSION = 8.1
 QMAKE_MAC_SDK.macosx10.12.Path = /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.12.sdk

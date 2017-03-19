@@ -49,3 +49,13 @@ demos/ezPP-SDLtextured/ezPPSDLTextured.pro.user
 demos/ezPP-SDL/ezPPSDLTest
 
 demos/ezPP-SDL/Makefile
+
+tests/tests.pro.user
+
+*.autosave
+
+*.stash
+
+*.user
+
+*.moc
