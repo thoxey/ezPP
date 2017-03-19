@@ -61,8 +61,10 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, m_screenWidth, m_screenHeight, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         //Attach it to our frame buffer
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_textureColorbuffer[i], 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, m_textureColorbuffer[i], 0);
         // Create first framebuffer's Renderbuffer Object to hold depth and stencil buffers
         glGenRenderbuffers(1, &m_DepthStencil[i]);
         glBindRenderbuffer(GL_FRAMEBUFFER, m_DepthStencil[0]);
@@ -128,6 +130,13 @@ void ezPostProcessor::ezCapture()
     }
     //////////////////////////////////////////SAFETY CHECKS
 
+    for(int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[i]);
+        glClearColor(0.f,0.f,0.f,1.f);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+    }
+
     //Redirect to my framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[0]);
     glViewport(0,0,m_screenWidth,m_screenHeight);
@@ -154,31 +163,33 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
     //Turn off the depth and stencil test
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_STENCIL_TEST);
+    glClear(GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
     //Bind the Screen Space Quad
     glBindVertexArray(quadVAO);
 
-    glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
+    //glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
 
     //  Bool used to swap between buffers
-    bool pingPong = false;
+    bool pingPong = true;
     bool first = true;
     //Swap between the two FBOs using the last ones texture
     for(const auto &i : m_effectMasterVector)
     {
+        glClearColor(0.f,0.f,0.f,1.f);
         //Bind FB1 and bind tex2, and then push them to the shader and draw
         glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[pingPong]);
         glUseProgram(i->getShaderProg());
         //Bind the texture
-        glBindTexture(GL_TEXTURE_2D, first ? m_textureColorbuffer[1] : m_textureColorbuffer[!pingPong]);  // m_textureColorbuffer[!pingPong]);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[pingPong],0);
-        //Uncommenting this line will allow us to stack the effects but causes weird effects
+        glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[!pingPong]);  // m_textureColorbuffer[!pingPong]);
+        //glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[pingPong],0);
         glDrawArrays(GL_TRIANGLES, 0, 6);
         //Swap
         pingPong = !pingPong;
         if(first)
             first = false;
     }
+
     //Bind to the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glClearColor(0.f,0.f,0.f,1.f);
@@ -186,6 +197,8 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 
     //Draw to screen
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+
 
     //Renable the depth test
     glEnable(GL_DEPTH_TEST);
@@ -197,10 +210,16 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 void ezPostProcessor::ezCleanUp()
 {
     //Clears all but the default buffer
-    for(auto i : m_effectMasterVector)
+    for(auto itr : m_effectMasterVector)
     {
         if (m_effectMasterVector.size() == 1)
         {
+            for(int i = 0; i < 2; i++)
+            {
+                glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[i]);
+                glClearColor(0.f,0.f,0.f,1.f);
+                glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            }
             return;
         }
         m_effectMasterVector.pop_back();

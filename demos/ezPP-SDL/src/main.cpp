@@ -122,9 +122,9 @@ int main()
     //---------------------------------------------------------------------------------------------------------------------------------------------------DECLARE VERTICIES FOR TRIANGLE
     GLfloat vertices[] = {
         // Positions         // Colors
-        0.8f,  -0.8f,  0.0f,  1.0f, 0.2f, 0.2f,  // Bottom Right
-        -0.8f, -0.8f,  0.0f,  0.2f, 1.0f, 0.2f,  // Bottom Left
-        0.0f,   0.8f,  0.0f,  0.2f, 0.2f, 1.0f   // Top
+        0.8f,  -0.8f,  1.0f,  1.0f, 0.2f, 0.2f,  // Bottom Right
+        -0.8f, -0.8f,  1.0f,  0.2f, 1.0f, 0.2f,  // Bottom Left
+        0.0f,   0.8f,  1.0f,  0.2f, 0.2f, 1.0f   // Top
     };
 
     GLuint VBO, VAO;
