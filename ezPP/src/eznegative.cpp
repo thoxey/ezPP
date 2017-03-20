@@ -19,7 +19,7 @@ ezNegative::ezNegative()
             color = vec4(1.0-outColour.r,1.0-outColour.g,1.0-outColour.b, 1.0);;
             }
             )changePixelVals";
-
     ezCompileEffect();
+
 }
 //----------------------------------------------------------------------------------------------------------------------

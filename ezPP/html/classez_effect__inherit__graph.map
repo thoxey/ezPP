@@ -1,0 +1,14 @@
+<map id="ezEffect" name="ezEffect">
+<area shape="rect" id="node2" href="$classez3x3_kernel.html" title="{ez3x3Kernel\n||+ ez3x3Kernel()\l}" alt="" coords="5,219,115,296"/>
+<area shape="rect" id="node3" href="$classez_brightness.html" title="{ezBrightness\n||+ ezBrightness()\l}" alt="" coords="140,219,255,296"/>
+<area shape="rect" id="node4" href="$classez_contrast.html" title="{ezContrast\n||+ ezContrast()\l}" alt="" coords="279,219,381,296"/>
+<area shape="rect" id="node5" href="$classez_edge_detect.html" title="{ezEdgeDetect\n||+ ezEdgeDetect()\l}" alt="" coords="406,219,527,296"/>
+<area shape="rect" id="node6" href="$classez_edit_channel.html" title="{ezEditChannel\n||+ ezEditChannel()\l}" alt="" coords="552,219,675,296"/>
+<area shape="rect" id="node7" href="$classez_emboss.html" title="{ezEmboss\n||+ ezEmboss()\l}" alt="" coords="699,219,797,296"/>
+<area shape="rect" id="node8" href="$classez_file_effect.html" title="{ezFileEffect\n||+ ezFileEffect()\l}" alt="" coords="821,219,928,296"/>
+<area shape="rect" id="node9" href="$classez_gaussian_blur.html" title="{ezGaussianBlur\n||+ ezGaussianBlur()\l}" alt="" coords="952,219,1083,296"/>
+<area shape="rect" id="node10" href="$classez_greyscale.html" title="{ezGreyscale\n||+ ezGreyscale()\l}" alt="" coords="1107,219,1217,296"/>
+<area shape="rect" id="node11" href="$classez_negative.html" title="{ezNegative\n||+ ezNegative()\l}" alt="" coords="1243,219,1347,296"/>
+<area shape="rect" id="node12" href="$classez_no_effects.html" title="{ezNoEffects\n||+ ezNoEffects()\l}" alt="" coords="1371,219,1479,296"/>
+<area shape="rect" id="node13" href="$classez_sharpness.html" title="{ezSharpness\n||+ ezSharpness()\l}" alt="" coords="1504,219,1619,296"/>
+</map>

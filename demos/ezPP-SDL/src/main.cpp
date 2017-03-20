@@ -22,6 +22,7 @@
 #include <ezcontrast.h>
 #include <ezEditChannel.h>
 #include <ezFileEffect.h>
+#include <memory>
 
 #define SCREENSIZE 900
 
@@ -80,7 +81,7 @@ int main()
 #endif
     ///TEST TRIANGLE/////////////////////////////////////////////////////////////////////////////////////////////////
     ///Taken from "https://learnopengl.com/code_viewer.php?code=getting-started/hello-triangle-exercise1" Accesesed 21/02
-    //---------------------------------------------------------------------------------------------------------------------------------------------------DECLARE VERTEX ARRAY
+    //----------------------------------------------------------------------------n-----------------------------------------------------------------------DECLARE VERTEX ARRAY
     // Vertex shader
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
     glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
@@ -177,23 +178,23 @@ int main()
                 {
                 // if it's the escape key quit
                 case SDLK_ESCAPE :  quit = true; break;
-                case SDLK_g      :     myezPPer.ezAddEffect(new ezGreyscale);                             break;
-                case SDLK_n      :     myezPPer.ezAddEffect(new ezNegative);                              break;
-                case SDLK_e      :     myezPPer.ezAddEffect(new ezEdgeDetect);                            break;
-                case SDLK_b      :     myezPPer.ezAddEffect(new ezGaussianBlur);                          break;
-                case SDLK_m      :     myezPPer.ezAddEffect(new ezEmboss);                                break;
-                case SDLK_s      :     myezPPer.ezAddEffect(new ezSharpness);                             break;
-                case SDLK_f      :     myezPPer.ezAddEffect(new ezFileEffect("shaders/ezNegative.glsl")); break;
-                case SDLK_UP     :     myezPPer.ezAddEffect(new ezBrightness(0.1f));                      break;
-                case SDLK_DOWN   :     myezPPer.ezAddEffect(new ezBrightness(-0.1f));                     break;
-                case SDLK_RIGHT  :     myezPPer.ezAddEffect(new ezContrast(100));                         break;
-                case SDLK_LEFT   :     myezPPer.ezAddEffect(new ezContrast(-100));                        break;
-                case SDLK_1      :     myezPPer.ezAddEffect(new ezEditChannel(0.2f,'r'));                 break;
-                case SDLK_2      :     myezPPer.ezAddEffect(new ezEditChannel(-0.2f,'r'));                break;
-                case SDLK_3      :     myezPPer.ezAddEffect(new ezEditChannel(0.2f,'g'));                 break;
-                case SDLK_4      :     myezPPer.ezAddEffect(new ezEditChannel(-0.2f,'g'));                break;
-                case SDLK_5      :     myezPPer.ezAddEffect(new ezEditChannel(0.2f,'b'));                 break;
-                case SDLK_6      :     myezPPer.ezAddEffect(new ezEditChannel(-0.2f,'b'));                break;
+                case SDLK_g      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezGreyscale));                             break;
+                case SDLK_n      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezNegative));                              break;
+                case SDLK_e      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEdgeDetect));                            break;
+                case SDLK_b      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezGaussianBlur));                          break;
+                case SDLK_m      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEmboss));                                break;
+                case SDLK_s      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezSharpness));                             break;
+                case SDLK_f      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezFileEffect("shaders/ezNegative.glsl"))); break;
+                case SDLK_UP     :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezBrightness(0.1f)));                      break;
+                case SDLK_DOWN   :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezBrightness(-0.1f)));                     break;
+                case SDLK_RIGHT  :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezContrast(100)));                         break;
+                case SDLK_LEFT   :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezContrast(-100)));                        break;
+                case SDLK_1      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEditChannel(0.2f,'r')));                 break;
+                case SDLK_2      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEditChannel(-0.2f,'r')));                break;
+                case SDLK_3      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEditChannel(0.2f,'g')));                 break;
+                case SDLK_4      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEditChannel(-0.2f,'g')));                break;
+                case SDLK_5      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEditChannel(0.2f,'b')));                 break;
+                case SDLK_6      :     myezPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEditChannel(-0.2f,'b')));                break;
                 case SDLK_c      :     myezPPer.ezCleanUp();                                              break;
                 default          :     break;
                 } // end of key process

@@ -20,6 +20,5 @@ public:
     /// @param _increment The amount to increment by
     //----------------------------------------------------------------------------------------------------------------------
   ezBrightness(float _increment);
-
 };
 #endif // EZBRIGHTNESS_H

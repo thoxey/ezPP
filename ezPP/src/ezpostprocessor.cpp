@@ -1,5 +1,6 @@
 #include "ezpostprocessor.h"
 #include <algorithm>
+#include "eznoeffects.h"
 //----------------------------------------------------------------------------------------------------------------------
 /// @file ezPostProcessor.cpp
 /// @brief The implementation of the ezPostProcessor class
@@ -101,7 +102,7 @@ void ezPostProcessor::ezInit(int _screenWidth, int _screenHeight)
     //-------------------------------------end citation
 
     //Add a blank effect to the master vector to allow the user to see an output
-    m_effectMasterVector.push_back(new ezEffect);
+    m_effectMasterVector.emplace_back(new ezNoEffects());
 
     //Confirm we reached the end of this stage and allow us to continue
     m_inited = true;
@@ -115,9 +116,9 @@ void ezPostProcessor::ezResize(int _screenWidth, int _screenHeight)
     m_screenWidth = _screenWidth;
 }
 //----------------------------------------------------------------------------------------------------------------------
-void ezPostProcessor::ezAddEffect(ezEffect * _addedEffect)
+void ezPostProcessor::ezAddEffect(std::unique_ptr<ezEffect> &&_addedEffect)
 {
-    m_effectMasterVector.push_back(_addedEffect);
+    m_effectMasterVector.emplace_back(std::move(_addedEffect));
 }
 //----------------------------------------------------------------------------------------------------------------------
 void ezPostProcessor::ezCapture()
@@ -172,22 +173,23 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 
     //  Bool used to swap between buffers
     bool pingPong = true;
-    //Swap between the two FBOs using the last ones texture
+//    //Swap between the two FBOs using the last ones texture
     for(const auto &i : m_effectMasterVector)
     {
         glClearColor(0.f,0.f,0.f,1.f);
-        //Bind FB1 and bind tex2, and then push them to the shader and draw
+//        Bind FB1 and bind tex2, and then push them to the shader and draw
         glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[pingPong]);
         glUseProgram(i->getShaderProg());
-        //Bind the texture
-        glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[!pingPong]);  // m_textureColorbuffer[!pingPong]);
-        //glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_textureColorbuffer[pingPong],0);
+
+
+       ///Uncommenting this allows stacking effects but causes strange visual bugs
+//        //Bind the texture
+        glBindTexture(GL_TEXTURE_2D, m_textureColorbuffer[!pingPong]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
+        ///End
         //Swap
         pingPong = !pingPong;
-
     }
-
     //Bind to the default framebuffer
     glBindFramebuffer(GL_FRAMEBUFFER, frameBuffer);
     glClearColor(0.f,0.f,0.f,1.f);
@@ -208,19 +210,16 @@ void ezPostProcessor::ezRender(GLuint frameBuffer)
 void ezPostProcessor::ezCleanUp()
 {
     //Clears all but the default buffer
-    for(auto itr : m_effectMasterVector)
+    while(m_effectMasterVector.size() > 1)
     {
-        if (m_effectMasterVector.size() == 1)
-        {
-            for(int i = 0; i < 2; i++)
-            {
-                glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[i]);
-                glClearColor(0.f,0.f,0.f,1.f);
-                glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-            }
-            return;
-        }
         m_effectMasterVector.pop_back();
+    }
+
+    for(int i = 0; i < 2; i++)
+    {
+        glBindFramebuffer(GL_FRAMEBUFFER, m_framebuffer[i]);
+        glClearColor(0.f,0.f,0.f,1.f);
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
 

@@ -1,0 +1,29 @@
+<map id="ezeffect.h" name="ezeffect.h">
+<area shape="rect" id="node2" href="$ezeffect_8cpp.html" title="ezeffect.cpp" alt="" coords="5,80,96,107"/>
+<area shape="rect" id="node3" href="$ez3x3kernel_8h.html" title="ez3x3kernel.h" alt="" coords="121,80,220,107"/>
+<area shape="rect" id="node5" href="$ezbrightness_8h.html" title="ezbrightness.h" alt="" coords="245,80,347,107"/>
+<area shape="rect" id="node7" href="$ezcontrast_8h.html" title="ezcontrast.h" alt="" coords="372,80,463,107"/>
+<area shape="rect" id="node9" href="$ezedgedetect_8h.html" title="ezedgedetect.h" alt="" coords="487,80,596,107"/>
+<area shape="rect" id="node11" href="$ez_edit_channel_8h.html" title="The class for generating the ezEditChannel effect, it changes the colour value of a channel..." alt="" coords="620,80,735,107"/>
+<area shape="rect" id="node13" href="$ezemboss_8h.html" title="ezemboss.h" alt="" coords="759,80,848,107"/>
+<area shape="rect" id="node15" href="$ez_file_effect_8h.html" title="The class for loading in an effect from a file. " alt="" coords="873,80,972,107"/>
+<area shape="rect" id="node17" href="$ezgaussianblur_8h.html" title="ezgaussianblur.h" alt="" coords="1002,80,1117,107"/>
+<area shape="rect" id="node19" href="$ezgreyscale_8h.html" title="ezgreyscale.h" alt="" coords="1153,80,1252,107"/>
+<area shape="rect" id="node21" href="$eznegative_8h.html" title="eznegative.h" alt="" coords="1297,80,1391,107"/>
+<area shape="rect" id="node23" href="$eznoeffects_8h.html" title="eznoeffects.h" alt="" coords="1435,80,1531,107"/>
+<area shape="rect" id="node26" href="$ezpostprocessor_8h.html" title="ezpostprocessor.h" alt="" coords="1562,80,1685,107"/>
+<area shape="rect" id="node27" href="$ezsharpness_8h.html" title="ezsharpness.h" alt="" coords="1725,80,1827,107"/>
+<area shape="rect" id="node4" href="$ez3x3kernel_8cpp.html" title="ez3x3kernel.cpp" alt="" coords="29,155,144,181"/>
+<area shape="rect" id="node6" href="$ezbrightness_8cpp.html" title="ezbrightness.cpp" alt="" coords="168,155,285,181"/>
+<area shape="rect" id="node8" href="$ezcontrast_8cpp.html" title="ezcontrast.cpp" alt="" coords="310,155,415,181"/>
+<area shape="rect" id="node10" href="$ezedgedetect_8cpp.html" title="ezedgedetect.cpp" alt="" coords="440,155,563,181"/>
+<area shape="rect" id="node12" href="$ez_edit_channel_8cpp.html" title="The implementation of the ezEditChannel class. " alt="" coords="587,155,715,181"/>
+<area shape="rect" id="node14" href="$ezemboss_8cpp.html" title="ezemboss.cpp" alt="" coords="739,155,841,181"/>
+<area shape="rect" id="node16" href="$ez_file_effect_8cpp.html" title="The implementation of the ezBrightness class. " alt="" coords="867,155,979,181"/>
+<area shape="rect" id="node18" href="$ezgaussianblur_8cpp.html" title="ezgaussianblur.cpp" alt="" coords="1003,155,1133,181"/>
+<area shape="rect" id="node20" href="$ezgreyscale_8cpp.html" title="ezgreyscale.cpp" alt="" coords="1158,155,1271,181"/>
+<area shape="rect" id="node22" href="$eznegative_8cpp.html" title="eznegative.cpp" alt="" coords="1296,155,1403,181"/>
+<area shape="rect" id="node24" href="$eznoeffects_8cpp.html" title="eznoeffects.cpp" alt="" coords="1427,155,1537,181"/>
+<area shape="rect" id="node25" href="$ezpostprocessor_8cpp.html" title="ezpostprocessor.cpp" alt="" coords="1563,155,1701,181"/>
+<area shape="rect" id="node28" href="$ezsharpness_8cpp.html" title="ezsharpness.cpp" alt="" coords="1726,155,1841,181"/>
+</map>

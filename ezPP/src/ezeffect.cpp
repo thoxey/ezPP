@@ -16,7 +16,6 @@ ezEffect::ezEffect()
                    color = outColour;
                    }
                    )m_FragSource";
-    ezCompileEffect();
 }
 ezEffect::~ezEffect()
 {

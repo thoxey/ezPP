@@ -1,0 +1,14 @@
+<map id="ezEffect::ezCompileEffect" name="ezEffect::ezCompileEffect">
+<area shape="rect" id="node2" href="$classez3x3_kernel.html#a1fee9c633a33658a401b4c44088d4e40" title="The ctor for the ez3x3Kernel class. " alt="" coords="239,5,407,32"/>
+<area shape="rect" id="node3" href="$classez_brightness.html#a6826a0a0315ec9c3ace5c3189d10adf4" title="The ctor for the ezBrightness class. " alt="" coords="235,56,410,83"/>
+<area shape="rect" id="node4" href="$classez_contrast.html#a66e8c8890163d19edfdcebe6bec62fde" title="The ctor for the ezContrast class. " alt="" coords="247,107,398,133"/>
+<area shape="rect" id="node5" href="$classez_edge_detect.html#ad6d18838d2dac9ce8ad4a10098cc4638" title="The ctor for the ezEdgeDetect class. " alt="" coords="229,157,417,184"/>
+<area shape="rect" id="node6" href="$classez_edit_channel.html#ac38c32e5bc6682871dc6dacdf4ed3ab9" title="The ctor for the ezEditChannel class. " alt="" coords="227,208,419,235"/>
+<area shape="rect" id="node7" href="$classez_emboss.html#aa6543fc7064a169b89c0c0533160446a" title="The ctor for the ezEmoboss class. " alt="" coords="251,259,395,285"/>
+<area shape="rect" id="node8" href="$classez_file_effect.html#a40ebc3a9c14ef6ca8aaf8112664b3e13" title="The ctor for the ezFileEffect class. " alt="" coords="243,309,403,336"/>
+<area shape="rect" id="node9" href="$classez_gaussian_blur.html#aa84b30a5010c9952d6a986cac4ddced7" title="The ctor for the ezGaussianBlur class. " alt="" coords="219,360,426,387"/>
+<area shape="rect" id="node10" href="$classez_greyscale.html#a932c86bd35e246fcf816a1708156c8f8" title="The ctor for the ezGeryscale class. " alt="" coords="239,411,407,437"/>
+<area shape="rect" id="node11" href="$classez_negative.html#a5f34cc622eee7cd01be9391cd950e877" title="The ctor for the ezNegative class. " alt="" coords="245,461,400,488"/>
+<area shape="rect" id="node12" href="$classez_no_effects.html#aec4d56e8ea830fb32e23b4b0026694af" title="The ctor for the ezNoEffects class. " alt="" coords="241,512,404,539"/>
+<area shape="rect" id="node13" href="$classez_sharpness.html#ae24180f041fb04d546e908ccf74cd282" title="The ctor for the ezSharpess class. " alt="" coords="235,563,410,589"/>
+</map>

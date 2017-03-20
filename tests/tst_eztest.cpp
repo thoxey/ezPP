@@ -170,8 +170,8 @@ void ezTest::addMultipleEffectsTRUE()
 {
     mockezPPer testPPer;
     uint numOfEffects = 10;
-    for(int i = 0; i < numOfEffects; i++)
-        testPPer.ezAddEffect(new ezEffect);
+    for(uint i = 0; i < numOfEffects; i++)
+        testPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEffect));
     QVERIFY2(testPPer.getEffectVector().size() == numOfEffects, "ezAdd not adding the right amount of effects");
 }
 void ezTest::addMultipleEffectsFALSE()
@@ -184,8 +184,8 @@ void ezTest::ezCleanUpClearsVector()
 {
     mockezPPer testPPer;
     uint numOfEffects = 10;
-    for(int i = 0; i < numOfEffects; i++)
-        testPPer.ezAddEffect(new ezEffect);
+    for(uint i = 0; i < numOfEffects; i++)
+        testPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEffect));
     testPPer.ezCleanUp();
     QVERIFY2(testPPer.getEffectVector().size() == 1, "ezCleanUp not clearing all effects");
 }
@@ -257,8 +257,8 @@ void ezTest::benchmarkNoEffectEzLoop()//Testing how long it takes to run a loop 
     mockezPPer testPPer;
     testPPer.ezInit(1,1);
     uint numOfEffects = 10;
-    for(int i = 0; i < numOfEffects; i++)
-        testPPer.ezAddEffect(new ezEffect);
+    for(uint i = 0; i < numOfEffects; i++)
+        testPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEffect));
     QBENCHMARK
     {
         testPPer.ezCapture();
@@ -280,8 +280,8 @@ void ezTest::benchmarkExtremeEzLoop()//Testing how long it takes to run a loop w
     mockezPPer testPPer;
     testPPer.ezInit(1,1);
     uint numOfEffects = 1000;
-    for(int i = 0; i < numOfEffects; i++)
-        testPPer.ezAddEffect(new ezEffect);
+    for(uint i = 0; i < numOfEffects; i++)
+        testPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezEffect));
     QBENCHMARK
     {
         testPPer.ezCapture();
@@ -293,7 +293,7 @@ void ezTest::benchmarkCompileEzEffect()//Testing how long it takes to add (and t
     mockezPPer testPPer;
     QBENCHMARK
     {
-        testPPer.ezAddEffect(new ezEffect);
+        testPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezNoEffects));
     }
 }
 void ezTest::benchmarkCompileLotsOfEzEffect()//Testing how long it takes toadd (and therefore compile) 1000 effects
@@ -302,8 +302,8 @@ void ezTest::benchmarkCompileLotsOfEzEffect()//Testing how long it takes toadd (
     uint numOfEffects = 1000;
     QBENCHMARK
     {
-        for(int i = 0; i < numOfEffects; i++)
-            testPPer.ezAddEffect(new ezEffect);
+        for(uint i = 0; i < numOfEffects; i++)
+            testPPer.ezAddEffect(std::unique_ptr<ezEffect>(new ezNoEffects));
     }
 }
 
