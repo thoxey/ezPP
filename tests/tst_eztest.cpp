@@ -3,6 +3,19 @@
 
 #include <SDL.h>
 
+#include <ezgreyscale.h>
+#include <eznegative.h>
+#include <ezedgedetect.h>
+#include <eznoeffects.h>
+#include <ez3x3kernel.h>
+#include <ezgaussianblur.h>
+#include <ezemboss.h>
+#include <ezsharpness.h>
+#include <ezbrightness.h>
+#include <ezcontrast.h>
+#include <ezEditChannel.h>
+#include <ezFileEffect.h>
+
 #include "mockezpper.h"
 
 
@@ -29,6 +42,34 @@ SDL_GLContext createOpenGLContext(SDL_Window *window)
     return SDL_GL_CreateContext(window);
 }
 
+bool debugShaderProgram(GLint _shaderProgram)
+{
+
+    GLuint shaders[2];
+    GLsizei count;
+
+    glGetAttachedShaders(_shaderProgram, 2, &count, shaders);
+
+    for(int i = 0; i < 2; i++)
+    {
+        GLint isCompiled = 0;
+        glGetShaderiv(shaders[i], GL_COMPILE_STATUS, &isCompiled);
+        if(isCompiled == GL_FALSE)
+        {
+            GLint maxLength = 0;
+            glGetShaderiv(shaders[i], GL_INFO_LOG_LENGTH, &maxLength);
+            std::vector<GLchar> errorLog(maxLength);
+            glGetShaderInfoLog(shaders[i], maxLength, &maxLength, &errorLog[0]);
+            std::cerr<<"Shader Error: ";
+            for(auto i : errorLog)
+                std::cerr<<i;
+            return false;
+        }
+    }
+    return true;
+
+}
+
 class ezTest : public QObject
 {
     Q_OBJECT
@@ -47,12 +88,22 @@ private Q_SLOTS:
     void addMultipleEffectsTRUE();
     void addMultipleEffectsFALSE();
     void ezCleanUpClearsVector();
+    void testEzGreyscale();
+    void testEzNegative();
+    void testEzEdgeDetect();
+    void testEz3x3Kernel();
+    void testEzgaussianblur();
+    void testEzEmboss();
+    void testEzSharpness();
+    void testEzBrightness();
+    void testEzContrast();
+    void testEzEditChannel();
+    void testEzFileEffect();
     void benchmarkNoEffectEzLoop();
     void benchmarkStandardEzLoop();
     void benchmarkExtremeEzLoop();
     void benchmarkCompileEzEffect();
     void benchmarkCompileLotsOfEzEffect();
-
 };
 
 ezTest::ezTest()
@@ -73,7 +124,7 @@ ezTest::ezTest()
     glewInit();
 #endif
 }
-
+//-------------------------------------------------------------------------------------------------------------------Testing Library Code
 void ezTest::initedTRUE()//Test that ezInit set m_inited to true
 {
     mockezPPer testPPer;
@@ -138,6 +189,69 @@ void ezTest::ezCleanUpClearsVector()
     testPPer.ezCleanUp();
     QVERIFY2(testPPer.getEffectVector().size() == 1, "ezCleanUp not clearing all effects");
 }
+//-------------------------------------------------------------------------------------------------------------------Testing Shaders
+
+void ezTest::testEzGreyscale()
+{
+    ezGreyscale testEff;
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezGreyScale not a valid shader");
+}
+void ezTest::testEzNegative()
+{
+    ezNegative testEff;
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezNegative not a valid shader");
+}
+void ezTest::testEzEdgeDetect()
+{
+    ezEdgeDetect testEff;
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezEdgeDetect not a valid shader");
+}
+void ezTest::testEz3x3Kernel()
+{
+    std::string testString =    "-2.0, -1.0,  0.0,"
+                                "-1.0,  1.0,  1.0,"
+                                " 0.0,  1.0,  2.0";
+    ez3x3Kernel testEff(testString);
+
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ez3x3Kernel not a valid shader");
+
+}
+void ezTest::testEzgaussianblur()
+{
+    ezGaussianBlur testEff;
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezGaussianBlur not a valid shader");
+}
+void ezTest::testEzEmboss()
+{
+    ezEmboss testEff;
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezEmboss not a valid shader");
+}
+void ezTest::testEzSharpness()
+{
+    ezSharpness testEff;
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezSharpness not a valid shader");
+}
+void ezTest::testEzBrightness()
+{
+    ezBrightness testEff(0.0f);
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezBrightness not a valid shader");
+}
+void ezTest::testEzContrast()
+{
+    ezContrast testEff(0);
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezContrast not a valid shader");
+}
+void ezTest::testEzEditChannel()
+{
+    ezEditChannel testEff(0.0f,'r');
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezGreyScale not a valid shader");
+}
+void ezTest::testEzFileEffect()
+{
+    ezFileEffect testEff("ShaderTester/fragSource.glsl");
+    QVERIFY2(debugShaderProgram(testEff.getShaderProg()), "ezGreyScale not a valid shader");
+}
+//-------------------------------------------------------------------------------------------------------------------Benchmarks
 void ezTest::benchmarkNoEffectEzLoop()//Testing how long it takes to run a loop with no effects
 {
     mockezPPer testPPer;
@@ -192,6 +306,7 @@ void ezTest::benchmarkCompileLotsOfEzEffect()//Testing how long it takes toadd (
             testPPer.ezAddEffect(new ezEffect);
     }
 }
+
 QTEST_APPLESS_MAIN(ezTest)
 
 #include "tst_eztest.moc"
